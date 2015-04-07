@@ -9,7 +9,7 @@ the dbseeder module
 
 import arcpy
 from functools import partial
-from models import TreatmentArea, Lookup
+import models
 
 
 class Seeder(object):
@@ -17,21 +17,26 @@ class Seeder(object):
     def __init__(self):
         super(Seeder, self).__init__()
 
-        self.table_models = [TreatmentArea()]
+        self.table_models = [
+                                models.Guzzler(),
+                                # models.Points(),
+                                # TreatmentArea()
+                            ]
 
     def process(self, locations):
         all_rows = '1=1'
-        all_rows = 'GUID = \'{00AEEB90-E846-483E-B677-08821009A066}\''
+        # all_rows = 'GUID = \'{00AEEB90-E846-483E-B677-08821009A066}\''
 
         for model in self.table_models:
             rows = []
             source = model.source
+
             fields = model.source_fields()
             destination = model.destination
             destination_fields = model.destination_fields()
 
             #: query source data for specific table
-            print('querying source data')
+            print('querying source data: {}'.format(model.source))
 
             arcpy.env.workspace = locations['source']
             with arcpy.da.SearchCursor(in_table=source, field_names=fields, where_clause=all_rows) as cursor:
@@ -40,16 +45,22 @@ class Seeder(object):
                 rows = map(partial(self._etl_row, model), cursor)
 
             #: write rows to destination table
-            print('inserting {} records into destination'.format(len(rows)))
+            print('inserting {} records into destination: {}'.format(len(rows), model.destination))
 
             arcpy.env.workspace = locations['destination']
             with arcpy.da.InsertCursor(in_table=destination, field_names=destination_fields) as cursor:
                 for row in rows:
                     row = map(lambda x: x[1], row)
-                    cursor.insertRow(row)
+                    try:
+                        cursor.insertRow(row)
+                    except Exception, e:
+                        print destination_fields
+                        print row
+                        raise e
 
     def _etl_row(self, model, row):
         source_data = zip(model.source_fields(), row)
+        unmapped_fields = model.unmapped_fields()
 
         def etl_row(item):
             field = item[0]
@@ -58,14 +69,25 @@ class Seeder(object):
             field_info = model.schema[field]
 
             if 'lookup' in field_info:
-                values = Lookup.__dict__[field_info['lookup']]
+                values = models.Lookup.__dict__[field_info['lookup']]
 
                 if value in values.keys():
                     item = (field, values[value])
 
             return item
 
-        return map(etl_row, source_data)
+        row = map(etl_row, source_data)
+
+        if unmapped_fields:
+
+            for field in unmapped_fields:
+                field_info = model.schema[field[0]]
+
+                if 'value' in field_info:
+                    item = field_info['value']
+                    row.insert(field[1], item)
+
+        return row
 
         # if table_name == 'crash':
         #     input_keys = Schema.crash_input_keys

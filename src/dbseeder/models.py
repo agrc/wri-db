@@ -8,53 +8,7 @@ The basic models
 '''
 
 
-class TreatmentArea(object):
-
-    def __init__(self):
-        super(TreatmentArea, self).__init__()
-
-        self.source = 'WRI.WRIADMIN.WRITREATMENTAREA'
-        self.destination = 'POLY'
-
-    schema = {
-        'OBJECTID': {
-            'type': 'int',
-            'map': 'FeatureID',
-            'order': 0
-        },
-        'GUID': {
-            'type': 'unique',
-            'map': 'GUID',
-            'order': 1
-        },
-        'Project_FK': {
-            'type': 'unique',
-            'map': 'Project_FK',
-            'order': 2
-        },
-        'Type': {
-            'type': 'string',
-            'map': 'TypeDescription',
-            'lookup': 'treatment_area',
-            'order': 3
-        },
-        'Completed': {
-            'type': 'string',
-            'map': 'Completed',
-            'lookup': 'complete',
-            'order': 4
-        },
-        'Status': {
-            'type': 'int',
-            'map': 'Status',
-            'order': 5
-        },
-        'SHAPE@': {
-            'type': 'shape',
-            'map': 'SHAPE@',
-            'order': 6
-        }
-    }
+class Table(object):
 
     def destination_fields(self):
         items = sorted(map(lambda x: {x['order']: x['map']}, self.schema.values()))
@@ -65,29 +19,32 @@ class TreatmentArea(object):
 
         return fields
 
-    def order_destination_values(self, attributes):
-        return [
-            attributes['FeatureID'],
-            attributes['GUID'],
-            attributes['Project_FK'],
-            attributes['TypeDescription'],
-            attributes['Completed'],
-            attributes['Status']
-        ]
-
     def source_fields(self):
         items = sorted(map(lambda x: {x[1]['order']: x[0]}, self.schema.items()))
 
         fields = []
         for field in items:
+            #: ignore '' fields that have no source
+            if field.values()[0].startswith('*'):
+                continue
+
             fields.append(field.values()[0])
 
         return fields
 
+    def unmapped_fields(self):
+        items = sorted(map(lambda x: {x[1]['order']: x[0]}, self.schema.items()))
 
-class Table(object):
+        fields = []
+        for field in items:
+            if not field.values()[0].startswith('*'):
+                continue
 
-    def __init__(self, table):
+            fields.append((field.values()[0], field.keys()[0]))
+
+        return fields
+
+    def __init__(self):
         super(Table, self).__init__()
 
     rollup = {
@@ -334,6 +291,183 @@ class Table(object):
     crash_etl_keys = map(lambda x: x['map'], crash.values())
 
 
+class TreatmentArea(Table):
+
+    def __init__(self):
+        super(TreatmentArea, self).__init__()
+
+        self.source = 'WRI.WRIADMIN.WRITREATMENTAREA'
+        self.destination = 'POLY'
+
+    schema = {
+        'GUID': {
+            'type': 'unique',
+            'map': 'GUID',
+            'order': 1
+        },
+        'Project_FK': {
+            'type': 'unique',
+            'map': 'Project_FK',
+            'order': 2
+        },
+        'Type': {
+            'type': 'string',
+            'map': 'Type',
+            'lookup': 'treatment_area',
+            'order': 3
+        },
+        'Completed': {
+            'type': 'string',
+            'map': 'Completed',
+            'order': 4
+        },
+        'Status': {
+            'type': 'string',
+            'map': 'Status',
+            'lookup': 'status',
+            'order': 5
+        },
+        'SHAPE@': {
+            'type': 'shape',
+            'map': 'SHAPE@',
+            'order': 6
+        }
+    }
+
+    def destination_fields(self):
+        items = sorted(map(lambda x: {x['order']: x['map']}, self.schema.values()))
+
+        fields = []
+        for field in items:
+            fields.append(field.values()[0])
+
+        return fields
+
+    def order_destination_values(self, attributes):
+        return [
+            attributes['FeatureID'],
+            attributes['GUID'],
+            attributes['Project_FK'],
+            attributes['TypeDescription'],
+            attributes['Completed'],
+            attributes['Status']
+        ]
+
+    def source_fields(self):
+        items = sorted(map(lambda x: {x[1]['order']: x[0]}, self.schema.items()))
+
+        fields = []
+        for field in items:
+            fields.append(field.values()[0])
+
+        return fields
+
+
+class Points(Table):
+
+    def __init__(self):
+        super(Points, self).__init__()
+
+        self.source = 'WRI.WRIADMIN.WRIPOINTS'
+        self.destination = 'POINT'
+
+    schema = {
+        'GUID': {
+            'type': 'unique',
+            'map': 'GUID',
+            'order': 1
+        },
+        'Project_FK': {
+            'type': 'unique',
+            'map': 'Project_FK',
+            'order': 2
+        },
+        'Type': {
+            'type': 'string',
+            'map': 'Type',
+            'lookup': 'other_points',
+            'order': 3
+        },
+        'Description': {
+            'type': 'string',
+            'map': 'Description',
+            'order': 4
+        },
+        'Completed': {
+            'type': 'string',
+            'map': 'Completed',
+            'order': 5
+        },
+        'Status': {
+            'type': 'string',
+            'map': 'Status',
+            'lookup': 'status',
+            'order': 6
+        },
+        'SHAPE@': {
+            'type': 'shape',
+            'map': 'SHAPE@',
+            'order': 7
+        }
+    }
+
+
+class Guzzler(Table):
+
+    def __init__(self):
+        super(Guzzler, self).__init__()
+
+        self.source = 'WRI.WRIADMIN.WRIGUZZLER'
+        self.destination = 'POINT'
+
+    schema = {
+        'GUID': {
+            'type': 'unique',
+            'map': 'GUID',
+            'order': 1
+        },
+        'Project_FK': {
+            'type': 'unique',
+            'map': 'Project_FK',
+            'order': 2
+        },
+        '*Type': {
+            'type': 'string',
+            'map': 'Type',
+            'value': 'Guzzler',
+            'order': 3
+        },
+        'GuzzlerType': {
+            'type': 'string',
+            'map': 'SubType',
+            'lookup': 'guzzler_type',
+            'order': 4
+        },
+        'GuzzlerAction': {
+            'type': 'string',
+            'map': 'SubType',
+            'lookup': 'structure_action',
+            'order': 5
+        },
+        'Completed': {
+            'type': 'string',
+            'map': 'Completed',
+            'order': 6
+        },
+        'Status': {
+            'type': 'string',
+            'map': 'Status',
+            'lookup': 'status',
+            'order': 7
+        },
+        'SHAPE@': {
+            'type': 'shape',
+            'map': 'SHAPE@',
+            'order': 8
+        }
+    }
+
+
 class Lookup(object):
 
     def __init__(self):
@@ -341,13 +475,33 @@ class Lookup(object):
 
     treatment_area = {
         1: 'Terrestrial',
-        2: 'Aquatic'
+        2: 'Aquatic/Riparian'
     }
 
-    complete = {
+    status = {
+        0: 'Draft',
         1: 'Proposal',
         2: 'Project',
         3: 'Complete',
-        4: 'Not Funded',
+        4: 'Cancelled',
         5: 'Cancelled'
+    }
+
+    other_points = {
+        1: 'Trough',
+        2: 'Water Control Structure',
+        3: 'Other'
+    }
+
+    structure_action = {
+        1: 'Maintenance',
+        2: 'Modification',
+        3: 'Construction',
+        4: 'Reconstruction',
+        5: 'Removal'
+    }
+
+    guzzler_type = {
+        1: 'Big Game',
+        2: 'Other'
     }
