@@ -18,8 +18,8 @@ def main():
     arguments = docopt(__doc__)
 
     db = {
-      'source': arguments['<source>'],
-      'destination': arguments['<destination>']
+        'source': arguments['<source>'],
+        'destination': arguments['<destination>']
     }
 
     seeder = Seeder()

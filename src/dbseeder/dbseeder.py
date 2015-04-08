@@ -9,6 +9,7 @@ the dbseeder module
 
 import arcpy
 from functools import partial
+from os.path import join, dirname
 import models
 
 
@@ -18,14 +19,26 @@ class Seeder(object):
         super(Seeder, self).__init__()
 
         self.table_models = [
-                                models.Guzzler(),
-                                # models.Points(),
-                                # TreatmentArea()
-                            ]
+            models.Dam(),
+            models.Guzzler(),
+            models.Points(),
+            models.Fence(),
+            models.Pipeline(),
+            models.AffectedArea(),
+            models.TreatmentArea(),
+        ]
+
+        dir = dirname(__file__)
+        filename = join(dir, '..\\..\\scripts\\sql\\seed_feature_types.sql')
+
+        with open(filename, 'r') as f:
+            self.seed_sql = f.read()
 
     def process(self, locations):
         all_rows = '1=1'
         # all_rows = 'GUID = \'{00AEEB90-E846-483E-B677-08821009A066}\''
+
+        self.set_geometry_types(locations['destination'])
 
         for model in self.table_models:
             rows = []
@@ -39,7 +52,9 @@ class Seeder(object):
             print('querying source data: {}'.format(model.source))
 
             arcpy.env.workspace = locations['source']
-            with arcpy.da.SearchCursor(in_table=source, field_names=fields, where_clause=all_rows) as cursor:
+            with arcpy.da.SearchCursor(in_table=source,
+                                       field_names=fields,
+                                       where_clause=all_rows) as cursor:
                 #: etl the rows
                 print('etling results')
                 rows = map(partial(self._etl_row, model), cursor)
@@ -48,7 +63,9 @@ class Seeder(object):
             print('inserting {} records into destination: {}'.format(len(rows), model.destination))
 
             arcpy.env.workspace = locations['destination']
-            with arcpy.da.InsertCursor(in_table=destination, field_names=destination_fields) as cursor:
+
+            with arcpy.da.InsertCursor(in_table=destination,
+                                       field_names=destination_fields) as cursor:
                 for row in rows:
                     row = map(lambda x: x[1], row)
                     try:
@@ -58,9 +75,12 @@ class Seeder(object):
                         print row
                         raise e
 
+        self.set_geometry_types(locations['destination'], create=False)
+
     def _etl_row(self, model, row):
         source_data = zip(model.source_fields(), row)
         unmapped_fields = model.unmapped_fields()
+        # etl_fields = model.etl_fields()
 
         def etl_row(item):
             field = item[0]
@@ -70,7 +90,6 @@ class Seeder(object):
 
             if 'lookup' in field_info:
                 values = models.Lookup.__dict__[field_info['lookup']]
-
                 if value in values.keys():
                     item = (field, values[value])
 
@@ -79,62 +98,23 @@ class Seeder(object):
         row = map(etl_row, source_data)
 
         if unmapped_fields:
-
             for field in unmapped_fields:
                 field_info = model.schema[field[0]]
 
                 if 'value' in field_info:
                     item = field_info['value']
-                    row.insert(field[1], item)
+                    row.insert(field[1], (field_info['map'], item))
 
         return row
 
-        # if table_name == 'crash':
-        #     input_keys = Schema.crash_input_keys
-        #     etl_keys = Schema.crash_etl_keys
-        #     lookup = Schema.crash
-        #     formatter = Schema.crash_schema_ordering
-        # elif table_name == 'driver':
-        #     input_keys = Schema.driver_input_keys
-        #     etl_keys = Schema.driver_etl_keys
-        #     lookup = Schema.driver
-        #     formatter = Schema.driver_schema_ordering
-        # elif table_name == 'rollup':
-        #     input_keys = Schema.rollup_input_keys
-        #     etl_keys = Schema.rollup_etl_keys
-        #     lookup = Schema.rollup
-        #     formatter = Schema.rollup_schema_ordering
-        # else:
-        #     raise Exception(file, 'Not a part of the crash, drivers, rollops convention')
+    def set_geometry_types(self, db, create=True):
+        cursor = arcpy.ArcSDESQLExecute(db)
 
-        # return self._etl_row_generic(row, lookup, input_keys, etl_keys, formatter)
+        if create:
+            cursor.execute(self.seed_sql)
 
-        return 'hello'
+            return
 
-    def _etl_row_generic(self, row, lookup, input_keys, etl_keys, formatter=None):
-        # etl_row = dict.fromkeys(etl_keys)
-
-        # for key in row.keys():
-        #     if key not in input_keys:
-        #         continue
-
-        #     etl_info = lookup[key]
-
-        #     value = row[key]
-        #     etl_value = Caster.cast(value, etl_info['type'])
-
-        #     if 'lookup' in etl_info.keys():
-        #         lookup_name = etl_info['lookup']
-        #         values = Lookup.__dict__[lookup_name]
-
-        #         if etl_value in values.keys():
-        #             etl_value = values[etl_value]
-
-        #     etl_row[etl_info['map']] = etl_value
-
-        # if formatter:
-        #     return formatter(etl_row)
-
-        # return etl_row
-
-        pass
+        cursor.execute('delete from {} where status = \'{}\''.format('POINT', 'temporary'))
+        cursor.execute('delete from {} where status = \'{}\''.format('LINE', 'temporary'))
+        cursor.execute('delete from {} where status = \'{}\''.format('POLY', 'temporary'))
