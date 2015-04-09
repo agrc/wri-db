@@ -11,135 +11,187 @@ import unittest
 import dbseeder.models as model
 
 
-class TestGuzzler(unittest.TestCase):
+class TestTable(unittest.TestCase):
 
     def setUp(self):
-        self.patient = model.Guzzler()
+        self.patient = model.Table()
+        self.schemas = [
+            'base_schema',
+            'final_schema',
+        ]
+        self.schema = [{
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'MAPPED-SHAPE@',
+                'order': 0,
+                'etl': {
+                    'in': 'POLY',
+                    'out': 'LINE',
+                    'method': 'poly_to_line'
+                }
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'MAPPED-Type',
+                'value': 'Guzzler',
+                'order': 1
+            },
+            'Status': {
+                'type': 'string',
+                'map': 'MAPPED-Status',
+                'lookup': 'status',
+                'order': 2
+            }
+        }, {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'MAPPED-SHAPE@',
+                'order': 0
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'MAPPED-Type',
+                'value': 'Guzzler',
+                'order': 1
+            },
+            'Completed': {
+                'type': 'string',
+                'map': 'MAPPED-Completed',
+                'order': 2
+            },
+            '*Status': {
+                'type': 'string',
+                'map': 'MAPPED-Status',
+                'value': 'Complete',
+                'order': 3
+            }
+        }]
+
+        self.patient.set_schema(False, self.schema)
+
+    def test_format_source_table(self):
+        is_final = False
+
+        actual = self.patient.format_source_table('{}{}', ['owner', is_final])
+        expected = 'owner'
+
+        self.assertEqual(actual, expected)
+
+    def test_format_source_table_final(self):
+        is_final = True
+
+        actual = self.patient.format_source_table('{}{}', ['owner', is_final])
+        expected = 'ownerFINAL'
+
+        self.assertEqual(actual, expected)
+
+    def test_set_schema(self):
+        is_final = False
+
+        actual = self.patient.set_schema(is_final, self.schemas)
+
+        expected = 'base_schema'
+
+        self.assertEqual(actual, expected)
+
+    def test_set_schema_final(self):
+        is_final = True
+
+        actual = self.patient.set_schema(is_final, self.schemas)
+
+        expected = 'final_schema'
+
+        self.assertEqual(actual, expected)
 
     def test_destination_fields(self):
+        is_final = False
+
+        self.patient.set_schema(is_final, self.schema)
+
         actual = self.patient.destination_fields()
         expected = [
-            'SHAPE@',
-            'GUID',
-            'Project_FK',
-            'Type',
-            'SubType',
-            'Action',
-            'Completed',
-            'Status',
+            'MAPPED-SHAPE@',
+            'MAPPED-Type',
+            'MAPPED-Status',
         ]
 
         self.assertListEqual(actual, expected)
 
-    def test_destination_fields_for_incomplete(self):
-        self.patient.incomplete = True
+    def test_destination_fields_final(self):
+        is_final = True
+
+        self.patient.set_schema(is_final, self.schema)
 
         actual = self.patient.destination_fields()
         expected = [
-            'GUID',
-            'Project_FK',
-            'Type',
-            'SubType',
-            'Action',
-            'Completed',
-        ]
-
-        self.assertListEqual(actual, expected)
-
-    def test_destination_field_order(self):
-        self.patient.incomplete = True
-
-        actual = self.patient.destination_fields()
-        expected = [
-            'GUID',
-            'Project_FK',
-            'Type',
-            'SubType',
-            'Action',
-            'Completed',
+            'MAPPED-SHAPE@',
+            'MAPPED-Type',
+            'MAPPED-Completed',
+            'MAPPED-Status',
         ]
 
         self.assertListEqual(actual, expected)
 
     def test_source_fields(self):
+        is_final = False
+
+        self.patient.set_schema(is_final, self.schema)
+
         actual = self.patient.source_fields()
         expected = [
             'SHAPE@',
-            'GUID',
-            'Project_FK',
-            'GuzzlerType',
-            'GuzzlerAction',
-            'Completed',
             'Status',
         ]
 
         self.assertListEqual(actual, expected)
 
-    def test_source_fields_for_incomplete(self):
-        self.patient.incomplete = True
+    def test_source_fields_final(self):
+        is_final = True
+
+        self.patient.set_schema(is_final, self.schema)
 
         actual = self.patient.source_fields()
         expected = [
-            'GUID',
-            'Project_FK',
-            'GuzzlerType',
-            'GuzzlerAction',
+            'SHAPE@',
             'Completed',
         ]
 
         self.assertListEqual(actual, expected)
 
     def test_unmapped_fields(self):
+        is_final = False
+
+        self.patient.set_schema(is_final, self.schema)
+
         actual = self.patient.unmapped_fields()
-        expected = [('*Type', 3)]
+        expected = [(1, '*Type')]
 
         self.assertListEqual(actual, expected)
 
-    def test_unmapped_fields_for_incomplete(self):
-        #: index needs to drop since shape is first 0 index
-        self.patient.incomplete = True
+    def test_unmapped_fields_final(self):
+        is_final = True
+
+        self.patient.set_schema(is_final, self.schema)
 
         actual = self.patient.unmapped_fields()
-        expected = [('*Type', 2)]
+        expected = [(1, '*Type'), (3, '*Status')]
 
         self.assertListEqual(actual, expected)
 
     def test_etl_fields(self):
-        self.patient.schema['ETL'] = {
-            'type': 'shape',
-            'map': 'SHAPE@',
-            'etl': {
-                'geometry': {
-                    'in': 'POINT',
-                    'out': 'MULTIPOINT'
-                }
-            },
-            'order': 6
-        }
-
         actual = self.patient.etl_fields()
-        expected = [(6, {
-            'geometry': {
-                    'in': 'POINT',
-                    'out': 'MULTIPOINT'
-                    }
-        })]
+        expected = [(0, {
+                    'in': 'POLY',
+                    'out': 'LINE',
+                    'method': 'poly_to_line'
+                    })]
 
         self.assertListEqual(actual, expected)
 
-    def test_etl_fields_for_incomplete(self):
-        self.patient.incomplete = True
-        self.patient.schema['ETL'] = {
-            'type': 'shape',
-            'map': 'SHAPE@',
-            'etl': {
-                'geometry': {
-                    'in': 'POINT',
-                    'out': 'MULTIPOINT'
-                }
-            },
-            'order': 6
-        }
+    def test_etl_fields_final(self):
+        is_final = True
+
+        self.patient.set_schema(is_final, self.schema)
 
         actual = self.patient.etl_fields()
         expected = []

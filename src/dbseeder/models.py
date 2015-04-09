@@ -18,31 +18,22 @@ class Table(object):
 
         self.where_clause = '1=1'
 
-        self.incomplete = False
-        self.ignore_if_incomplete = ['SHAPE@', 'Status']
-        self._updated_order = False
+    def format_source_table(self, table, values):
+        owner = values[0]
+        final = 'FINAL' if values[1] else ''
 
-    def set_incomplete(self, incomplete):
-        if incomplete:
-            self.source += '_INCOMPLETE'
-            self.where_clause = 'Completed = 0'
+        return table.format(owner, final)
 
-        self.incomplete = incomplete
+    def set_schema(self, is_final, available_schemas):
+        self.schema = available_schemas[1] if is_final else available_schemas[0]
+
+        return self.schema
 
     def destination_fields(self):
         items = sorted(map(lambda x: {x['order']: x}, self.schema.values()))
 
         fields = []
         for field in items:
-            #: skip for incomplete tables
-            if self.incomplete and field.values()[0]['map'] in self.ignore_if_incomplete:
-                continue
-
-            #: drop index if incomplete is True
-            if self.incomplete and not self._updated_order:
-                field.values()[0]['order'] = field.values()[0]['order'] - 1
-                self._updated_order = True
-
             fields.append(field.values()[0]['map'])
 
         return fields
@@ -52,21 +43,6 @@ class Table(object):
 
         fields = []
         for field in items:
-            #: skip shape for incomplete tables
-            if self.incomplete and field.values()[0] in self.ignore_if_incomplete:
-                continue
-
-            #: drop index if incomplete is True
-            if self.incomplete and not self._updated_order:
-                current_key = field.keys()[0]
-                new_key = current_key - 1
-
-                if new_key not in field:
-                    field[new_key] = field[current_key]
-                    del field[current_key]
-
-                self._updated_order = True
-
             #: ignore fields that have no source
             if field.values()[0].startswith('*'):
                 continue
@@ -76,227 +52,31 @@ class Table(object):
         return fields
 
     def unmapped_fields(self):
-        items = map(lambda x: {x[1]['order']: x[0]}, self.schema.items())
+        items = sorted(map(lambda x: {x[1]['order']: x[0]}, self.schema.items()))
 
         fields = []
         for field in items:
-            #: skip shape for incomplete tables
-            if self.incomplete and field.values()[0] in self.ignore_if_incomplete:
-                continue
-
-            #: drop index if incomplete is True
-            if self.incomplete:
-                current_key = field.keys()[0]
-                new_key = current_key - 1
-
-                if new_key not in field:
-                    field[new_key] = field[current_key]
-                    del field[current_key]
-
             #: ignore fields that have a source
             if not field.values()[0].startswith('*'):
                 continue
 
-            fields.append((field.values()[0], field.keys()[0]))
+            fields.append((field.keys()[0], field.values()[0]))
 
         return fields
 
     def etl_fields(self):
-        if self.incomplete:
-            return []
-
         items = filter(lambda x: 'etl' in x, self.schema.values())
         items = map(lambda x: (x['order'], x['etl']), items)
 
         return items
 
 
-class TreatmentArea(Table):
-
-    def __init__(self, incomplete=True):
-        super(TreatmentArea, self).__init__()
-
-        self.source = 'WRI.{}.WRITREATMENTAREA'.format(self.owner)
-        self.set_incomplete(incomplete)
-
-        self.destination = 'POLY'
-        self.schema = {
-            'SHAPE@': {
-                'type': 'shape',
-                'map': 'SHAPE@',
-                'order': 0
-            },
-            'GUID': {
-                'type': 'unique',
-                'map': 'GUID',
-                'order': 1
-            },
-            'Project_FK': {
-                'type': 'unique',
-                'map': 'Project_FK',
-                'order': 2
-            },
-            'Type': {
-                'type': 'string',
-                'map': 'Type',
-                'lookup': 'treatment_area',
-                'order': 3
-            },
-            'Completed': {
-                'type': 'string',
-                'map': 'Completed',
-                'order': 4
-            },
-            'Status': {
-                'type': 'string',
-                'map': 'Status',
-                'lookup': 'status',
-                'order': 5
-            }
-        }
-
-
-class TreatmentArea_Final(Table):
-
-    def __init__(self):
-        super(TreatmentArea_Final, self).__init__()
-
-        self.source = 'WRI.{}.WRIFINALTREATMENTAREA'.format(self.owner)
-        self.destination = 'POLY'
-        self.schema = {
-            'SHAPE@': {
-                'type': 'shape',
-                'map': 'SHAPE@',
-                'order': 0
-            },
-            'GUID': {
-                'type': 'unique',
-                'map': 'GUID',
-                'order': 1
-            },
-            'CompletedProject_FK': {
-                'type': 'unique',
-                'map': 'Project_FK',
-                'order': 2
-            },
-            'Type': {
-                'type': 'string',
-                'map': 'Type',
-                'lookup': 'treatment_area',
-                'order': 3
-            },
-            'Completed': {
-                'type': 'string',
-                'map': 'Completed',
-                'order': 4
-            },
-            '*Status': {
-                'type': 'string',
-                'map': 'Status',
-                'value': 'Complete',
-                'order': 5
-            }
-        }
-
-
-class AffectedArea(Table):
-
-    def __init__(self, incomplete=False):
-        super(AffectedArea, self).__init__()
-
-        self.source = 'WRI.{}.WRIAFFECTEDAREA'.format(self.owner)
-        self.set_incomplete(incomplete)
-
-        self.destination = 'POLY'
-        self.schema = {
-            'SHAPE@': {
-                'type': 'shape',
-                'map': 'SHAPE@',
-                'order': 0
-            },
-            'GUID': {
-                'type': 'unique',
-                'map': 'GUID',
-                'order': 1
-            },
-            'Project_FK': {
-                'type': 'unique',
-                'map': 'Project_FK',
-                'order': 2
-            },
-            '*Type': {
-                'type': 'string',
-                'map': 'Type',
-                'value': 'Affected Area',
-                'order': 3
-            },
-            'Completed': {
-                'type': 'string',
-                'map': 'Completed',
-                'order': 4
-            },
-            'Status': {
-                'type': 'string',
-                'map': 'Status',
-                'lookup': 'status',
-                'order': 5
-            }
-        }
-
-
-class AffectedArea_Final(Table):
-
-    def __init__(self):
-        super(AffectedArea_Final, self).__init__()
-
-        self.source = 'WRI.{}.WRIFINALAFFECTEDAREA'.format(self.owner)
-        self.destination = 'POLY'
-        self.schema = {
-            'SHAPE@': {
-                'type': 'shape',
-                'map': 'SHAPE@',
-                'order': 0
-            },
-            'GUID': {
-                'type': 'unique',
-                'map': 'GUID',
-                'order': 1
-            },
-            'CompletedProject_FK': {
-                'type': 'unique',
-                'map': 'Project_FK',
-                'order': 2
-            },
-            '*Type': {
-                'type': 'string',
-                'map': 'Type',
-                'value': 'Affected Area',
-                'order': 3
-            },
-            'Completed': {
-                'type': 'string',
-                'map': 'Completed',
-                'order': 4
-            },
-            '*Status': {
-                'type': 'string',
-                'map': 'Status',
-                'value': 'Complete',
-                'order': 5
-            }
-        }
-
-
 class Points(Table):
 
-    def __init__(self, incomplete=False):
+    def __init__(self, final=False):
         super(Points, self).__init__()
 
-        self.source = 'WRI.{}.WRIPOINTS'.format(self.owner)
-        self.set_incomplete(incomplete)
-
-        self.destination = 'POINT'
-        self.schema = {
+        schema = {
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
@@ -336,15 +116,7 @@ class Points(Table):
             }
         }
 
-
-class Points_Final(Table):
-
-    def __init__(self):
-        super(Points_Final, self).__init__()
-
-        self.source = 'WRI.{}.WRIFINALPOINTS'.format(self.owner)
-        self.destination = 'POINT'
-        self.schema = {
+        final_schema = {
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
@@ -383,18 +155,22 @@ class Points_Final(Table):
                 'order': 6
             }
         }
+
+        self.source = self.format_source_table('WRI.{}.WRI{}POINTS', [self.owner, final])
+        self.destination = 'POINT'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
 
 
 class Guzzler(Table):
 
-    def __init__(self, incomplete=False):
+    def __init__(self, final=False):
         super(Guzzler, self).__init__()
 
-        self.source = 'WRI.{}.WRIGUZZLER'.format(self.owner)
-        self.set_incomplete(incomplete)
-
-        self.destination = 'POINT'
-        self.schema = {
+        schema = {
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
@@ -441,15 +217,7 @@ class Guzzler(Table):
             }
         }
 
-
-class Guzzler_Final(Table):
-
-    def __init__(self):
-        super(Guzzler_Final, self).__init__()
-
-        self.source = 'WRI.{}.WRIFINALGUZZLER'.format(self.owner)
-        self.destination = 'POINT'
-        self.schema = {
+        final_schema = {
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
@@ -496,127 +264,21 @@ class Guzzler_Final(Table):
             }
         }
 
-
-class Dam(Table):
-
-    def __init__(self, incomplete=False):
-        super(Dam, self).__init__()
-
-        self.source = 'WRI.{}.WRIDam'.format(self.owner)
-        self.set_incomplete(incomplete)
-
-        self.destination = 'LINE'
-        self.schema = {
-            'SHAPE@': {
-                'type': 'shape',
-                'map': 'SHAPE@',
-                'order': 0,
-                'etl': {
-                    'in': 'POLY',
-                    'out': 'LINE',
-                    'method': 'poly_to_line'
-                }
-            },
-            'GUID': {
-                'type': 'unique',
-                'map': 'GUID',
-                'order': 1
-            },
-            'Project_FK': {
-                'type': 'unique',
-                'map': 'Project_FK',
-                'order': 2
-            },
-            '*Type': {
-                'type': 'string',
-                'map': 'Type',
-                'value': 'Dam',
-                'order': 3
-            },
-            'DamAction': {
-                'type': 'string',
-                'map': 'Action',
-                'lookup': 'structure_action',
-                'order': 4
-            },
-            'Completed': {
-                'type': 'string',
-                'map': 'Completed',
-                'order': 5
-            },
-            'Status': {
-                'type': 'string',
-                'map': 'Status',
-                'lookup': 'status',
-                'order': 6
-            }
-        }
-
-
-class Dam_Final(Table):
-
-    def __init__(self):
-        super(Dam_Final, self).__init__()
-
-        self.source = 'WRI.{}.WRIFINALDAM'.format(self.owner)
-        self.destination = 'LINE'
-        self.schema = {
-            'SHAPE@': {
-                'type': 'shape',
-                'map': 'SHAPE@',
-                'order': 0,
-                'etl': {
-                    'in': 'POLY',
-                    'out': 'LINE',
-                    'method': 'poly_to_line'
-                }
-            },
-            'GUID': {
-                'type': 'unique',
-                'map': 'GUID',
-                'order': 1
-            },
-            'CompletedProject_FK': {
-                'type': 'unique',
-                'map': 'Project_FK',
-                'order': 2
-            },
-            '*Type': {
-                'type': 'string',
-                'map': 'Type',
-                'value': 'Dam',
-                'order': 3
-            },
-            'DamAction': {
-                'type': 'string',
-                'map': 'Action',
-                'lookup': 'structure_action',
-                'order': 4
-            },
-            'Completed': {
-                'type': 'string',
-                'map': 'Completed',
-                'order': 5
-            },
-            '*Status': {
-                'type': 'string',
-                'map': 'Status',
-                'value': 'Complete',
-                'order': 6
-            }
-        }
+        self.source = self.format_source_table('WRI.{}.WRIGUZZLER', [self.owner, final])
+        self.destination = 'POINT'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
 
 
 class Fence(Table):
 
-    def __init__(self, incomplete=False):
+    def __init__(self, final=False):
         super(Fence, self).__init__()
 
-        self.source = 'WRI.{}.WRIFENCE'.format(self.owner)
-        self.set_incomplete(incomplete)
-
-        self.destination = 'LINE'
-        self.schema = {
+        schema = {
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
@@ -663,15 +325,7 @@ class Fence(Table):
             }
         }
 
-
-class Fence_Final(Table):
-
-    def __init__(self):
-        super(Fence_Final, self).__init__()
-
-        self.source = 'WRI.{}.WRIFINALFENCE'.format(self.owner)
-        self.destination = 'LINE'
-        self.schema = {
+        final_schema = {
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
@@ -717,18 +371,22 @@ class Fence_Final(Table):
                 'order': 7
             }
         }
+
+        self.source = self.format_source_table('WRI.{}.WRIFENCE', [self.owner, final])
+        self.destination = 'LINE'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
 
 
 class Pipeline(Table):
 
-    def __init__(self, incomplete=False):
+    def __init__(self, final=False):
         super(Pipeline, self).__init__()
 
-        self.source = 'WRI.{}.WRIPipeline'.format(self.owner)
-        self.set_incomplete(incomplete)
-
-        self.destination = 'LINE'
-        self.schema = {
+        schema = {
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
@@ -775,15 +433,7 @@ class Pipeline(Table):
             }
         }
 
-
-class Pipeline_Final(Table):
-
-    def __init__(self):
-        super(Pipeline_Final, self).__init__()
-
-        self.source = 'WRI.{}.WRIFINALPIPELINE'.format(self.owner)
-        self.destination = 'LINE'
-        self.schema = {
+        final_schema = {
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
@@ -829,6 +479,288 @@ class Pipeline_Final(Table):
                 'order': 7
             }
         }
+
+        self.source = self.format_source_table('WRI.{}.WRIPIPELINE', [self.owner, final])
+        self.destination = 'LINE'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
+
+
+class TreatmentArea(Table):
+
+    def __init__(self, final=False):
+        super(TreatmentArea, self).__init__()
+
+        schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'Project_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            'Type': {
+                'type': 'string',
+                'map': 'Type',
+                'lookup': 'treatment_area',
+                'order': 3
+            },
+            'Completed': {
+                'type': 'string',
+                'map': 'Completed',
+                'order': 4
+            },
+            'Status': {
+                'type': 'string',
+                'map': 'Status',
+                'value': 'Complete',
+                'order': 5
+            }
+        }
+
+        final_schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'CompletedProject_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            'Type': {
+                'type': 'string',
+                'map': 'Type',
+                'lookup': 'treatment_area',
+                'order': 3
+            },
+            'Completed': {
+                'type': 'string',
+                'map': 'Completed',
+                'order': 4
+            },
+            '*Status': {
+                'type': 'string',
+                'map': 'Status',
+                'lookup': 'status',
+                'order': 5
+            }
+        }
+
+        self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        self.destination = 'POLY'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
+
+
+class AffectedArea(Table):
+
+    def __init__(self, final=False):
+        super(AffectedArea, self).__init__()
+
+        schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'Project_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'Type',
+                'value': 'Affected Area',
+                'order': 3
+            },
+            'Completed': {
+                'type': 'string',
+                'map': 'Completed',
+                'order': 4
+            },
+            'Status': {
+                'type': 'string',
+                'map': 'Status',
+                'lookup': 'status',
+                'order': 5
+            }
+        }
+
+        final_schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'CompletedProject_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'Type',
+                'value': 'Affected Area',
+                'order': 3
+            },
+            'Completed': {
+                'type': 'string',
+                'map': 'Completed',
+                'order': 4
+            },
+            '*Status': {
+                'type': 'string',
+                'map': 'Status',
+                'value': 'Complete',
+                'order': 5
+            }
+        }
+
+        self.source = self.format_source_table('WRI.{}.WRIAFFECTEDAREA', [self.owner, final])
+        self.destination = 'POLY'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
+
+
+class Dam(Table):
+
+    def __init__(self, final=False):
+        super(Dam, self).__init__()
+
+        schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0,
+                'etl': {
+                    'in': 'POLY',
+                    'out': 'LINE',
+                    'method': 'poly_to_line'
+                }
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'Project_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'Type',
+                'value': 'Dam',
+                'order': 3
+            },
+            'DamAction': {
+                'type': 'string',
+                'map': 'Action',
+                'lookup': 'structure_action',
+                'order': 4
+            },
+            'Completed': {
+                'type': 'string',
+                'map': 'Completed',
+                'order': 5
+            },
+            'Status': {
+                'type': 'string',
+                'map': 'Status',
+                'lookup': 'status',
+                'order': 6
+            }
+        }
+
+        final_schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0,
+                'etl': {
+                    'in': 'POLY',
+                    'out': 'LINE',
+                    'method': 'poly_to_line'
+                }
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'CompletedProject_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'Type',
+                'value': 'Dam',
+                'order': 3
+            },
+            'DamAction': {
+                'type': 'string',
+                'map': 'Action',
+                'lookup': 'structure_action',
+                'order': 4
+            },
+            'Completed': {
+                'type': 'string',
+                'map': 'Completed',
+                'order': 5
+            },
+            '*Status': {
+                'type': 'string',
+                'map': 'Status',
+                'value': 'Complete',
+                'order': 6
+            }
+        }
+
+        self.source = self.format_source_table('WRI.{}.WRIDAM', [self.owner, final])
+        self.destination = 'LINE'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
 
 
 class Lookup(object):

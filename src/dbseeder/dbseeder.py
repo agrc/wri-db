@@ -19,27 +19,20 @@ class Seeder(object):
         super(Seeder, self).__init__()
 
         self.table_models = [
-            models.Guzzler(),
-            models.Guzzler(incomplete=True),
-            models.Guzzler_Final(),
             models.Points(),
-            models.Points(incomplete=True),
-            models.Points_Final(),
+            models.Points(final=True),
+            models.Guzzler(),
+            models.Guzzler(final=True),
             models.Fence(),
-            models.Fence(incomplete=True),
-            models.Fence_Final(),
+            models.Fence(final=True),
             models.Pipeline(),
-            models.Pipeline(incomplete=True),
-            models.Pipeline_Final(),
+            models.Pipeline(final=True),
             models.Dam(),
-            models.Dam(incomplete=True),
-            models.Dam_Final(),
+            models.Dam(final=True),
             models.AffectedArea(),
-            models.AffectedArea(incomplete=True),
-            models.AffectedArea_Final(),
+            models.AffectedArea(final=True),
             models.TreatmentArea(),
-            models.TreatmentArea(incomplete=True),
-            models.TreatmentArea_Final(),
+            models.TreatmentArea(final=True),
         ]
 
         self.scratch_line = '%scratchGDB%\\wri_dbseeder_line'
