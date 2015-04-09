@@ -19,6 +19,7 @@ class TestGuzzler(unittest.TestCase):
     def test_destination_fields(self):
         actual = self.patient.destination_fields()
         expected = [
+            'SHAPE@',
             'GUID',
             'Project_FK',
             'Type',
@@ -26,7 +27,21 @@ class TestGuzzler(unittest.TestCase):
             'Action',
             'Completed',
             'Status',
-            'SHAPE@'
+        ]
+
+        self.assertListEqual(actual, expected)
+
+    def test_destination_fields_for_incomplete(self):
+        self.patient.incomplete = True
+
+        actual = self.patient.destination_fields()
+        expected = [
+            'GUID',
+            'Project_FK',
+            'Type',
+            'SubType',
+            'Action',
+            'Completed',
         ]
 
         self.assertListEqual(actual, expected)
@@ -34,13 +49,27 @@ class TestGuzzler(unittest.TestCase):
     def test_source_fields(self):
         actual = self.patient.source_fields()
         expected = [
+            'SHAPE@',
             'GUID',
             'Project_FK',
             'GuzzlerType',
             'GuzzlerAction',
             'Completed',
             'Status',
-            'SHAPE@'
+        ]
+
+        self.assertListEqual(actual, expected)
+
+    def test_source_fields_for_incomplete(self):
+        self.patient.incomplete = True
+
+        actual = self.patient.source_fields()
+        expected = [
+            'GUID',
+            'Project_FK',
+            'GuzzlerType',
+            'GuzzlerAction',
+            'Completed',
         ]
 
         self.assertListEqual(actual, expected)
@@ -48,6 +77,15 @@ class TestGuzzler(unittest.TestCase):
     def test_unmapped_fields(self):
         actual = self.patient.unmapped_fields()
         expected = [('*Type', 3)]
+
+        self.assertListEqual(actual, expected)
+
+    def test_unmapped_fields_for_incomplete(self):
+        #: index needs to drop since shape is first 0 index
+        self.patient.incomplete = True
+
+        actual = self.patient.unmapped_fields()
+        expected = [('*Type', 2)]
 
         self.assertListEqual(actual, expected)
 

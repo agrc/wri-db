@@ -17,15 +17,15 @@ from docopt import docopt
 def main():
     arguments = docopt(__doc__)
 
-    db = {
+    locations = {
         'source': arguments['<source>'],
         'destination': arguments['<destination>']
     }
 
-    seeder = Seeder()
+    seeder = Seeder(locations)
 
     if arguments['seed']:
-        return seeder.process(db)
+        return seeder.process()
 
 if __name__ == '__main__':
     sys.exit(main())

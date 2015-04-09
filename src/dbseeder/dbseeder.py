@@ -9,36 +9,62 @@ the dbseeder module
 
 import arcpy
 from functools import partial
-from os.path import join, dirname
+from os.path import join, dirname, isfile
 import models
 
 
 class Seeder(object):
 
-    def __init__(self):
+    def __init__(self, locations):
         super(Seeder, self).__init__()
 
         self.table_models = [
-            models.Dam(),
             models.Guzzler(),
+            models.Guzzler(incomplete=True),
+            models.Guzzler_Final(),
             models.Points(),
+            models.Points(incomplete=True),
+            models.Points_Final(),
             models.Fence(),
+            models.Fence(incomplete=True),
+            models.Fence_Final(),
             models.Pipeline(),
+            models.Pipeline(incomplete=True),
+            models.Pipeline_Final(),
+            models.Dam(),
+            models.Dam(incomplete=True),
+            models.Dam_Final(),
             models.AffectedArea(),
+            models.AffectedArea(incomplete=True),
+            models.AffectedArea_Final(),
             models.TreatmentArea(),
+            models.TreatmentArea(incomplete=True),
+            models.TreatmentArea_Final(),
         ]
 
-        dir = dirname(__file__)
-        filename = join(dir, '..\\..\\scripts\\sql\\seed_feature_types.sql')
+        self.scratch_line = '%scratchGDB%\\wri_dbseeder_line'
 
-        with open(filename, 'r') as f:
+        parent_directory = dirname(__file__)
+        seed_sql = join(parent_directory, '..\\..\\scripts\\sql\\seed_feature_types.sql')
+
+        with open(seed_sql, 'r') as f:
             self.seed_sql = f.read()
 
-    def process(self, locations):
-        all_rows = '1=1'
-        # all_rows = 'GUID = \'{00AEEB90-E846-483E-B677-08821009A066}\''
+        def ensure_absolute_path(file):
+            if not isfile(file):
+                file = join(parent_directory, file)
+                if not isfile(file):
+                    raise Exception('database connection file not found')
 
-        self.set_geometry_types(locations['destination'])
+            return file
+
+        self.locations = locations
+
+        for key in locations.keys():
+            self.locations[key] = ensure_absolute_path(locations[key])
+
+    def process(self):
+        self.set_geometry_types(self.locations['destination'])
 
         for model in self.table_models:
             rows = []
@@ -51,10 +77,10 @@ class Seeder(object):
             #: query source data for specific table
             print('querying source data: {}'.format(model.source))
 
-            arcpy.env.workspace = locations['source']
+            arcpy.env.workspace = self.locations['source']
             with arcpy.da.SearchCursor(in_table=source,
                                        field_names=fields,
-                                       where_clause=all_rows) as cursor:
+                                       where_clause=model.where_clause) as cursor:
                 #: etl the rows
                 print('etling results')
                 rows = map(partial(self._etl_row, model), cursor)
@@ -62,7 +88,7 @@ class Seeder(object):
             #: write rows to destination table
             print('inserting {} records into destination: {}'.format(len(rows), model.destination))
 
-            arcpy.env.workspace = locations['destination']
+            arcpy.env.workspace = self.locations['destination']
 
             with arcpy.da.InsertCursor(in_table=destination,
                                        field_names=destination_fields) as cursor:
@@ -75,12 +101,12 @@ class Seeder(object):
                         print row
                         raise e
 
-        self.set_geometry_types(locations['destination'], create=False)
+        self.set_geometry_types(self.locations['destination'], create=False)
 
     def _etl_row(self, model, row):
         source_data = zip(model.source_fields(), row)
         unmapped_fields = model.unmapped_fields()
-        # etl_fields = model.etl_fields()
+        etl_fields = model.etl_fields()
 
         def etl_row(item):
             field = item[0]
@@ -105,6 +131,24 @@ class Seeder(object):
                     item = field_info['value']
                     row.insert(field[1], (field_info['map'], item))
 
+        if etl_fields:
+            #: (0, {'out': 'POINT', 'method': 'centroid', 'in': 'POLY'})
+            for field in etl_fields:
+                index = field[0]
+                etl_info = field[1]
+
+                attribute_name = row[index][0]
+                attribute_value = row[index][1]
+
+                if 'method' not in etl_info:
+                    continue
+
+                if etl_info['method'] == 'centroid':
+                    row[index] = (attribute_name, attribute_value.centroid)
+                elif etl_info['method'] == 'poly_to_line':
+                    line = self.polygon_to_line(attribute_value)
+                    row[index] = (attribute_name, line)
+
         return row
 
     def set_geometry_types(self, db, create=True):
@@ -118,3 +162,22 @@ class Seeder(object):
         cursor.execute('delete from {} where status = \'{}\''.format('POINT', 'temporary'))
         cursor.execute('delete from {} where status = \'{}\''.format('LINE', 'temporary'))
         cursor.execute('delete from {} where status = \'{}\''.format('POLY', 'temporary'))
+
+    def polygon_to_line(self, polygon):
+        _workspace = arcpy.env.workspace
+        arcpy.env.workspace = None
+
+        try:
+            arcpy.PolygonToLine_management(polygon, self.scratch_line, 'IGNORE_NEIGHBORS')
+            line = None
+
+            with arcpy.da.SearchCursor(self.scratch_line, 'SHAPE@') as cursor:
+                line = cursor.next()[0]
+
+            arcpy.Delete_management(self.scratch_line)
+        except Exception, e:
+            raise e
+        finally:
+            arcpy.env.workspace = _workspace
+
+        return line
