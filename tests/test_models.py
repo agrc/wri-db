@@ -46,6 +46,21 @@ class TestGuzzler(unittest.TestCase):
 
         self.assertListEqual(actual, expected)
 
+    def test_destination_field_order(self):
+        self.patient.incomplete = True
+
+        actual = self.patient.destination_fields()
+        expected = [
+            'GUID',
+            'Project_FK',
+            'Type',
+            'SubType',
+            'Action',
+            'Completed',
+        ]
+
+        self.assertListEqual(actual, expected)
+
     def test_source_fields(self):
         actual = self.patient.source_fields()
         expected = [
@@ -109,6 +124,25 @@ class TestGuzzler(unittest.TestCase):
                     'out': 'MULTIPOINT'
                     }
         })]
+
+        self.assertListEqual(actual, expected)
+
+    def test_etl_fields_for_incomplete(self):
+        self.patient.incomplete = True
+        self.patient.schema['ETL'] = {
+            'type': 'shape',
+            'map': 'SHAPE@',
+            'etl': {
+                'geometry': {
+                    'in': 'POINT',
+                    'out': 'MULTIPOINT'
+                }
+            },
+            'order': 6
+        }
+
+        actual = self.patient.etl_fields()
+        expected = []
 
         self.assertListEqual(actual, expected)
 

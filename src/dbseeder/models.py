@@ -12,10 +12,15 @@ class Table(object):
 
     def __init__(self):
         super(Table, self).__init__()
+
         self.owner = 'dbo'
         self.owner = 'WRIADMIN'
-        self.ignore_if_incomplete = ['SHAPE@', 'Status']
+
         self.where_clause = '1=1'
+
+        self.incomplete = False
+        self.ignore_if_incomplete = ['SHAPE@', 'Status']
+        self._updated_order = False
 
     def set_incomplete(self, incomplete):
         if incomplete:
@@ -34,8 +39,9 @@ class Table(object):
                 continue
 
             #: drop index if incomplete is True
-            if self.incomplete:
+            if self.incomplete and not self._updated_order:
                 field.values()[0]['order'] = field.values()[0]['order'] - 1
+                self._updated_order = True
 
             fields.append(field.values()[0]['map'])
 
@@ -51,13 +57,15 @@ class Table(object):
                 continue
 
             #: drop index if incomplete is True
-            if self.incomplete:
+            if self.incomplete and not self._updated_order:
                 current_key = field.keys()[0]
                 new_key = current_key - 1
 
                 if new_key not in field:
                     field[new_key] = field[current_key]
                     del field[current_key]
+
+                self._updated_order = True
 
             #: ignore fields that have no source
             if field.values()[0].startswith('*'):
@@ -94,6 +102,9 @@ class Table(object):
         return fields
 
     def etl_fields(self):
+        if self.incomplete:
+            return []
+
         items = filter(lambda x: 'etl' in x, self.schema.values())
         items = map(lambda x: (x['order'], x['etl']), items)
 

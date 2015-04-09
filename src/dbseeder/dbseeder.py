@@ -67,6 +67,8 @@ class Seeder(object):
         self.set_geometry_types(self.locations['destination'])
 
         for model in self.table_models:
+            print(model.source)
+
             rows = []
             source = model.source
 
@@ -75,18 +77,18 @@ class Seeder(object):
             destination_fields = model.destination_fields()
 
             #: query source data for specific table
-            print('querying source data: {}'.format(model.source))
+            print('- querying source data')
 
             arcpy.env.workspace = self.locations['source']
             with arcpy.da.SearchCursor(in_table=source,
                                        field_names=fields,
                                        where_clause=model.where_clause) as cursor:
                 #: etl the rows
-                print('etling results')
+                print('- etling results')
                 rows = map(partial(self._etl_row, model), cursor)
 
             #: write rows to destination table
-            print('inserting {} records into destination: {}'.format(len(rows), model.destination))
+            print('- inserting {} records into destination: {}'.format(len(rows), model.destination))
 
             arcpy.env.workspace = self.locations['destination']
 
@@ -100,6 +102,8 @@ class Seeder(object):
                         print destination_fields
                         print row
                         raise e
+
+            print('finished')
 
         self.set_geometry_types(self.locations['destination'], create=False)
 
