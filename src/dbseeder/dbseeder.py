@@ -8,9 +8,10 @@ the dbseeder module
 '''
 
 import arcpy
+import models
+import timeit
 from functools import partial
 from os.path import join, dirname, isfile
-import models
 
 
 class Seeder(object):
@@ -58,10 +59,11 @@ class Seeder(object):
 
     def process(self):
         self.set_geometry_types(self.locations['destination'])
+        total_start = timeit.default_timer()
 
         for model in self.table_models:
             print(model.source)
-
+            start = timeit.default_timer()
             rows = []
             source = model.source
 
@@ -94,11 +96,18 @@ class Seeder(object):
                     except Exception, e:
                         print destination_fields
                         print row
+                        end = timeit.default_timer()
+                        print('- {} seconds'.format(round(end-start, 2)))
                         raise e
 
-            print('finished')
+            end = timeit.default_timer()
+            print('- {} seconds'.format(round(end-start, 2)))
 
         self.set_geometry_types(self.locations['destination'], create=False)
+
+        total_end = timeit.default_timer()
+
+        print('finished in {}'.format(round(total_end - total_start, 2)))
 
     def _etl_row(self, model, row):
         source_data = zip(model.source_fields(), row)
@@ -116,17 +125,24 @@ class Seeder(object):
                 if value in values.keys():
                     item = (field, values[value])
 
+            if 'action' in field_info:
+                if field_info['action'] == 'strip' and value:
+                    item = (field, value.strip())
+                else:
+                    item = (field, None)
+
             return item
 
         row = map(etl_row, source_data)
 
         if unmapped_fields:
+            #: (6, '*Status')
             for field in unmapped_fields:
-                field_info = model.schema[field[0]]
+                field_info = model.schema[field[1]]
 
                 if 'value' in field_info:
                     item = field_info['value']
-                    row.insert(field[1], (field_info['map'], item))
+                    row.insert(field[0], (field_info['map'], item))
 
         if etl_fields:
             #: (0, {'out': 'POINT', 'method': 'centroid', 'in': 'POLY'})

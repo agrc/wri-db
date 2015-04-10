@@ -6,7 +6,6 @@ CREATE TABLE [Wri_Spatial].[dbo].POLY(
 	GUID uniqueidentifier NOT NULL,
 	Project_FK uniqueidentifier NOT NULL,
     Project_ID bigint NOT NULL,  
-	Completed int NULL,
 	Status varchar(50) NULL,
 	Shape geometry NULL,
 	PRIMARY KEY CLUSTERED 
@@ -26,7 +25,6 @@ CREATE TABLE [Wri_Spatial].[dbo].POINT(
 	GUID uniqueidentifier NOT NULL,
 	Project_FK uniqueidentifier NOT NULL,
     Project_ID bigint NOT NULL,
-	Completed int NULL,
 	Status varchar(50) NULL,
 	Shape geometry  NULL,
 	PRIMARY KEY CLUSTERED 
@@ -45,7 +43,6 @@ CREATE TABLE [Wri_Spatial].[dbo].LINE(
 	GUID uniqueidentifier NOT NULL,
 	Project_FK uniqueidentifier NOT NULL,
     Project_ID bigint NOT NULL,
-	Completed int NULL,
 	Status varchar(50) NULL,
 	Shape geometry NULL,
 	PRIMARY KEY CLUSTERED 
