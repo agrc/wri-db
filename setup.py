@@ -8,6 +8,8 @@ from os.path import splitext
 
 from setuptools import find_packages
 from setuptools import setup
+from setuptools.command.test import test as TestCommand
+import sys
 
 
 def read(*names, **kwargs):
@@ -15,9 +17,6 @@ def read(*names, **kwargs):
         join(dirname(__file__), *names),
         encoding=kwargs.get("encoding", "utf8")
     ).read()
-
-from setuptools.command.test import test as TestCommand
-import sys
 
 
 class Tox(TestCommand):
@@ -55,7 +54,10 @@ setup(
     zip_safe=False,
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 1 - Planning",
+        # "Development Status :: 3 - Alpha",
+        # "Development Status :: 4 - Beta",
+        # "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: Unix",
