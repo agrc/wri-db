@@ -35,6 +35,8 @@ class Seeder(object):
             models.Dam(final=True),
             models.AffectedArea(),
             models.AffectedArea(final=True),
+            models.Research(),
+            models.Research(final=True),
             models.FishPassage(),
             models.FishPassage(final=True),
             models.EasementAquisition(),

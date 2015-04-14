@@ -694,9 +694,88 @@ class AquaticTreatmentArea(Table):
 
         self.name = self.format_source_table('{1}Aquatic Treatment Areas as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
-        #: get all aquatic treatments without the fish passage action
+        #: get all aquatic treatments without the fish passage and research action
         self.where_clause = self.format_source_table('Type = 2 and guid not in (select distinct(TreatmentArea_FK) ' +
-                                                     'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION where ActionCode = 1)',
+                                                     'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION ' +
+                                                     'where ActionCode in (1,6)', [self.owner, final])
+        self.destination = 'POLY'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
+
+
+class Research(Table):
+
+    def __init__(self, final=False):
+        super(Research, self).__init__()
+
+        schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'Project_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'Type',
+                'value': 'Affected Area',
+                'order': 3
+            },
+            'Status': {
+                'type': 'string',
+                'map': 'Status',
+                'lookup': 'status',
+                'order': 4
+            }
+        }
+
+        final_schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'CompletedProject_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'Type',
+                'value': 'Affected Area',
+                'order': 3
+            },
+            '*Status': {
+                'type': 'string',
+                'map': 'Status',
+                'value': 'Complete',
+                'order': 4
+            }
+        }
+
+        self.name = self.format_source_table('{1}Research as {0}', [self.owner, final])
+        self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        #: get all aquatic treatments with all the research actions
+        self.where_clause = self.format_source_table('Type = 2 and guid in (select distinct(TreatmentArea_FK) ' +
+                                                     'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION where ActionCode = 6)',
                                                      [self.owner, final])
         self.destination = 'POLY'
         self.schema = self.set_schema(final,
@@ -776,8 +855,7 @@ class TerrestrialTreatmentArea(Table):
         #: get all Terrestrial treatments without the conservation and fee title
         self.where_clause = self.format_source_table('Type = 1 and guid not in (select distinct(TreatmentArea_FK) ' +
                                                      'from WRI.{0}.WRI{1}TerrestrialACTION where ' +
-                                                     'ActionCode in (24,25))',
-                                                     [self.owner, final])
+                                                     'ActionCode in (24,25))', [self.owner, final])
         self.destination = 'POLY'
         self.schema = self.set_schema(final,
                                       [
@@ -941,7 +1019,7 @@ class EasementAquisition(Table):
 
         self.name = self.format_source_table('{1}Easement/Aquisition as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
-        #: get all aquatic treatments with the fish passage action
+        #: get all terrestrial treatments with the easement and fee actions
         self.where_clause = self.format_source_table('Type = 1 and guid in (select distinct(TreatmentArea_FK) ' +
                                                      'from WRI.{0}.WRI{1}TerrestrialACTION where ' +
                                                      'ActionCode in (24,25))',
