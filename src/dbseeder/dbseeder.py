@@ -11,6 +11,7 @@ import arcpy
 import models
 import timeit
 from functools import partial
+from models import Lookup
 from os.path import join, dirname, isfile
 
 
@@ -18,6 +19,8 @@ class Seeder(object):
 
     def __init__(self, locations):
         super(Seeder, self).__init__()
+
+        self.Lookup = Lookup()
 
         self.table_models = [
             models.Points(),
@@ -32,8 +35,14 @@ class Seeder(object):
             models.Dam(final=True),
             models.AffectedArea(),
             models.AffectedArea(final=True),
-            models.TreatmentArea(),
-            models.TreatmentArea(final=True),
+            models.FishPassage(),
+            models.FishPassage(final=True),
+            models.EasementAquisition(),
+            models.EasementAquisition(final=True),
+            models.AquaticTreatmentArea(),
+            models.AquaticTreatmentArea(final=True),
+            models.TerrestrialTreatmentArea(),
+            models.TerrestrialTreatmentArea(final=True),
         ]
 
         self.scratch_line = '%scratchGDB%\\wri_dbseeder_line'
@@ -62,32 +71,31 @@ class Seeder(object):
         total_start = timeit.default_timer()
 
         for model in self.table_models:
-            print(model.source)
+            print(model.name)
             start = timeit.default_timer()
-            rows = []
-            source = model.source
 
-            fields = model.source_fields()
-            destination = model.destination
+            rows = []
+            source_table = model.source
+            source_fields = model.source_fields()
+            destination_table = model.destination
             destination_fields = model.destination_fields()
 
             #: query source data for specific table
             print('- querying source data')
 
             arcpy.env.workspace = self.locations['source']
-            with arcpy.da.SearchCursor(in_table=source,
-                                       field_names=fields,
+            with arcpy.da.SearchCursor(in_table=source_table,
+                                       field_names=source_fields,
                                        where_clause=model.where_clause) as cursor:
                 #: etl the rows
                 print('- etling results')
                 rows = map(partial(self._etl_row, model), cursor)
 
-            #: write rows to destination table
-            print('- inserting {} records into destination: {}'.format(len(rows), model.destination))
-
             arcpy.env.workspace = self.locations['destination']
 
-            with arcpy.da.InsertCursor(in_table=destination,
+            #: write rows to destination table
+            print('- inserting {} records into destination: {}'.format(len(rows), destination_table))
+            with arcpy.da.InsertCursor(in_table=destination_table,
                                        field_names=destination_fields) as cursor:
                 for row in rows:
                     row = map(lambda x: x[1], row)
@@ -110,6 +118,8 @@ class Seeder(object):
         print('finished in {}'.format(round(total_end - total_start, 2)))
 
     def _etl_row(self, model, row):
+        #: (<PointGeometry, guid, guid, 3.0, u'windmill', 5)
+
         source_data = zip(model.source_fields(), row)
         unmapped_fields = model.unmapped_fields()
         etl_fields = model.etl_fields()
@@ -194,3 +204,21 @@ class Seeder(object):
             arcpy.env.workspace = _workspace
 
         return line
+
+    def filter_rows_by_model(self, rows):
+        models = {
+            #: {'Status': 'Project', 'SHAPE@': <Polygon>, 'Project_FK': guid, 'GUID': guid, 'Type': 'Aquatic/Riparian'}
+            'FishPassage': [],
+            'Original': [],
+        }
+
+        for row in rows:
+            if 'model' not in row.keys():
+                models['Original'].append(row)
+
+            type = row['model']
+            del row['model']
+
+            models[type].append(row)
+
+        return models

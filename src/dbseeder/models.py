@@ -13,8 +13,8 @@ class Table(object):
     def __init__(self):
         super(Table, self).__init__()
 
-        self.owner = 'dbo'
         self.owner = 'WRIADMIN'
+        self.owner = 'dbo'
 
         self.where_clause = '1=1'
 
@@ -148,6 +148,7 @@ class Points(Table):
             }
         }
 
+        self.name = self.format_source_table('{1}Points as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}POINTS', [self.owner, final])
         self.destination = 'POINT'
         self.schema = self.set_schema(final,
@@ -246,6 +247,7 @@ class Guzzler(Table):
             }
         }
 
+        self.name = self.format_source_table('{1}Guzzler as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}GUZZLER', [self.owner, final])
         self.destination = 'POINT'
         self.schema = self.set_schema(final,
@@ -344,6 +346,7 @@ class Fence(Table):
             }
         }
 
+        self.name = self.format_source_table('{1}Fence as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}FENCE', [self.owner, final])
         self.destination = 'LINE'
         self.schema = self.set_schema(final,
@@ -442,6 +445,7 @@ class Pipeline(Table):
             }
         }
 
+        self.name = self.format_source_table('{1}Pipeline as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}PIPELINE', [self.owner, final])
         self.destination = 'LINE'
         self.schema = self.set_schema(final,
@@ -538,6 +542,7 @@ class Dam(Table):
             }
         }
 
+        self.name = self.format_source_table('{1}Dam as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}DAM', [self.owner, final])
         self.destination = 'LINE'
         self.schema = self.set_schema(final,
@@ -612,6 +617,7 @@ class AffectedArea(Table):
             }
         }
 
+        self.name = self.format_source_table('{1}Affected Areas as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}AFFECTEDAREA', [self.owner, final])
         self.destination = 'POLY'
         self.schema = self.set_schema(final,
@@ -621,10 +627,10 @@ class AffectedArea(Table):
                                       ])
 
 
-class TreatmentArea(Table):
+class AquaticTreatmentArea(Table):
 
     def __init__(self, final=False):
-        super(TreatmentArea, self).__init__()
+        super(AquaticTreatmentArea, self).__init__()
 
         schema = {
             'SHAPE@': {
@@ -686,7 +692,260 @@ class TreatmentArea(Table):
             }
         }
 
+        self.name = self.format_source_table('{1}Aquatic Treatment Areas as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        #: get all aquatic treatments without the fish passage action
+        self.where_clause = self.format_source_table('Type = 2 and guid not in (select distinct(TreatmentArea_FK) ' +
+                                                     'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION where ActionCode = 1)',
+                                                     [self.owner, final])
+        self.destination = 'POLY'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
+
+
+class TerrestrialTreatmentArea(Table):
+
+    def __init__(self, final=False):
+        super(TerrestrialTreatmentArea, self).__init__()
+
+        schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'Project_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            'Type': {
+                'type': 'string',
+                'map': 'Type',
+                'lookup': 'treatment_area',
+                'order': 3
+            },
+            'Status': {
+                'type': 'string',
+                'map': 'Status',
+                'lookup': 'status',
+                'order': 4
+            }
+        }
+
+        final_schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'CompletedProject_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            'Type': {
+                'type': 'string',
+                'map': 'Type',
+                'lookup': 'treatment_area',
+                'order': 3
+            },
+            '*Status': {
+                'type': 'string',
+                'map': 'Status',
+                'value': 'Complete',
+                'order': 4
+            }
+        }
+
+        self.name = self.format_source_table('{1}Terrestrial Treatment Areas as {0}', [self.owner, final])
+        self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        #: get all Terrestrial treatments without the conservation and fee title
+        self.where_clause = self.format_source_table('Type = 1 and guid not in (select distinct(TreatmentArea_FK) ' +
+                                                     'from WRI.{0}.WRI{1}TerrestrialACTION where ' +
+                                                     'ActionCode in (24,25))',
+                                                     [self.owner, final])
+        self.destination = 'POLY'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
+
+
+class FishPassage(Table):
+
+    def __init__(self, final=False):
+        super(FishPassage, self).__init__()
+
+        schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0,
+                'etl': {
+                    'in': 'POLY',
+                    'out': 'POINT',
+                    'method': 'centroid'
+                }
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'Project_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'Type',
+                'value': 'Fish passage structure',
+                'order': 3
+            },
+            'Status': {
+                'type': 'string',
+                'map': 'Status',
+                'lookup': 'status',
+                'order': 4
+            }
+        }
+
+        final_schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0,
+                'etl': {
+                    'in': 'POLY',
+                    'out': 'POINT',
+                    'method': 'centroid'
+                }
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'CompletedProject_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'Type',
+                'value': 'Fish passage structure',
+                'order': 3
+            },
+            '*Status': {
+                'type': 'string',
+                'map': 'Status',
+                'value': 'Complete',
+                'order': 4
+            }
+        }
+        self.name = self.format_source_table('{1}Fish Passage Structure as {0}', [self.owner, final])
+        self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        #: get all aquatic treatments with the fish passage action
+        self.where_clause = self.format_source_table('Type = 2 and guid in (select distinct(TreatmentArea_FK) ' +
+                                                     'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION where ActionCode = 1)',
+                                                     [self.owner, final])
+        self.destination = 'POINT'
+        self.schema = self.set_schema(final,
+                                      [
+                                          schema,
+                                          final_schema,
+                                      ])
+
+
+class EasementAquisition(Table):
+
+    def __init__(self, final=False):
+        super(EasementAquisition, self).__init__()
+
+        schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'Project_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'Type',
+                'value': 'Easement/Aquisition',
+                'order': 3
+            },
+            'Status': {
+                'type': 'string',
+                'map': 'Status',
+                'lookup': 'status',
+                'order': 4
+            }
+        }
+
+        final_schema = {
+            'SHAPE@': {
+                'type': 'shape',
+                'map': 'SHAPE@',
+                'order': 0
+            },
+            'GUID': {
+                'type': 'unique',
+                'map': 'GUID',
+                'order': 1
+            },
+            'CompletedProject_FK': {
+                'type': 'unique',
+                'map': 'Project_FK',
+                'order': 2
+            },
+            '*Type': {
+                'type': 'string',
+                'map': 'Type',
+                'value': 'Easement/Aquisition',
+                'order': 3
+            },
+            '*Status': {
+                'type': 'string',
+                'map': 'Status',
+                'value': 'Complete',
+                'order': 4
+            }
+        }
+
+        self.name = self.format_source_table('{1}Easement/Aquisition as {0}', [self.owner, final])
+        self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        #: get all aquatic treatments with the fish passage action
+        self.where_clause = self.format_source_table('Type = 1 and guid in (select distinct(TreatmentArea_FK) ' +
+                                                     'from WRI.{0}.WRI{1}TerrestrialACTION where ' +
+                                                     'ActionCode in (24,25))',
+                                                     [self.owner, final])
         self.destination = 'POLY'
         self.schema = self.set_schema(final,
                                       [
