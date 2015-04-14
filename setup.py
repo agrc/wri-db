@@ -78,7 +78,6 @@ setup(
     ],
     extras_require={
         # eg: 'rst': ["docutils>=0.11"],
-        'bumpversion'
     },
     entry_points={
         "console_scripts": [
