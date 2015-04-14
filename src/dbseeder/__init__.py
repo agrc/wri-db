@@ -1,3 +1,3 @@
-__version__ = "0.1.0"
-
-print 'wri dbseeder version {}'.format(__version__)
+__version__ = "0.2.0"
+
+print 'wri dbseeder version {}'.format(__version__)

@@ -40,7 +40,7 @@ class Tox(TestCommand):
 
 setup(
     name="wri-dbseeder",
-    version="0.1.0",
+    version="0.2.0",
     license="MIT",
     description="ETL WRI Data",
     long_description="",
@@ -78,6 +78,7 @@ setup(
     ],
     extras_require={
         # eg: 'rst': ["docutils>=0.11"],
+        'bumpversion'
     },
     entry_points={
         "console_scripts": [
