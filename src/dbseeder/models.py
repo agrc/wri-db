@@ -697,7 +697,7 @@ class AquaticTreatmentArea(Table):
         #: get all aquatic treatments without the fish passage and research action
         self.where_clause = self.format_source_table('Type = 2 and guid not in (select distinct(TreatmentArea_FK) ' +
                                                      'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION ' +
-                                                     'where ActionCode in (1,6)', [self.owner, final])
+                                                     'where ActionCode in (1,6))', [self.owner, final])
         self.destination = 'POLY'
         self.schema = self.set_schema(final,
                                       [

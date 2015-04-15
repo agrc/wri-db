@@ -51,9 +51,13 @@ class Seeder(object):
 
         parent_directory = dirname(__file__)
         seed_sql = join(parent_directory, '..\\..\\scripts\\sql\\seed_feature_types.sql')
+        status_sql = join(parent_directory, '..\\..\\scripts\\sql\\projects_without_finals.sql')
 
         with open(seed_sql, 'r') as f:
             self.seed_sql = f.read()
+
+        with open(status_sql, 'r') as f:
+            self.status_sql = f.read()
 
         def ensure_absolute_path(file):
             if not isfile(file):
@@ -115,9 +119,76 @@ class Seeder(object):
 
         self.set_geometry_types(self.locations['destination'], create=False)
 
+        print('Updating Pending Complete Status')
+        self.update_status(self.locations)
+
         total_end = timeit.default_timer()
 
         print('finished in {}'.format(round(total_end - total_start, 2)))
+
+    def update_status(self, locations):
+        where_clause = self._get_where_clause(arcpy, locations['source'])
+        fields = ['Status']
+
+        updated = 0
+        arcpy.env.workspace = locations['destination']
+        with arcpy.da.UpdateCursor(in_table='POLY',
+                                   where_clause=where_clause,
+                                   field_names=fields) as poly_cursor:
+            for row in poly_cursor:
+                row[0] = 'Pending Complete'
+                poly_cursor.updateRow(row)
+                updated += 1
+
+        with arcpy.da.UpdateCursor(in_table='POINT',
+                                   where_clause=where_clause,
+                                   field_names=fields) as point_cursor:
+            for row in point_cursor:
+                row[0] = 'Pending Complete'
+                point_cursor.updateRow(row)
+                updated += 1
+
+        with arcpy.da.UpdateCursor(in_table='LINE',
+                                   where_clause=where_clause,
+                                   field_names=fields) as line_cursor:
+            for row in line_cursor:
+                row[0] = 'Pending Complete'
+                line_cursor.updateRow(row)
+                updated += 1
+
+        print('Updated {} features'.format(updated))
+
+    def _get_where_clause(self, arcpy, db):
+        where_clause = 'Project_FK in ({})'
+        projects = []
+
+        arcpy.env.workspace = db
+        cursor = arcpy.ArcSDESQLExecute(db)
+
+        try:
+            projects = cursor.execute(self.status_sql)
+        except Exception, e:
+            print(e)
+            print(e.message)
+        finally:
+            del cursor
+
+        try:
+            if len(projects) == 1:
+                return where_clause.format(projects[0])
+
+            #: flatten array
+            projects = [item for sublist in projects for item in sublist]
+        except TypeError:
+            if not projects:
+                return None
+
+            return where_clause.format(projects)
+
+        return where_clause.format(','.join(projects))
+
+    def format_esri_guid(self, guid):
+        return '\'{{{}}}\''.format(guid)
 
     def _etl_row(self, model, row):
         #: (<PointGeometry, guid, guid, 3.0, u'windmill', 5)
@@ -178,15 +249,17 @@ class Seeder(object):
 
     def set_geometry_types(self, db, create=True):
         cursor = arcpy.ArcSDESQLExecute(db)
+        try:
+            if create:
+                cursor.execute(self.seed_sql)
 
-        if create:
-            cursor.execute(self.seed_sql)
+                return
 
-            return
-
-        cursor.execute('delete from {} where status = \'{}\''.format('POINT', 'temporary'))
-        cursor.execute('delete from {} where status = \'{}\''.format('LINE', 'temporary'))
-        cursor.execute('delete from {} where status = \'{}\''.format('POLY', 'temporary'))
+            cursor.execute('delete from {} where status = \'{}\''.format('POINT', 'temporary'))
+            cursor.execute('delete from {} where status = \'{}\''.format('LINE', 'temporary'))
+            cursor.execute('delete from {} where status = \'{}\''.format('POLY', 'temporary'))
+        finally:
+            del cursor
 
     def polygon_to_line(self, polygon):
         _workspace = arcpy.env.workspace
@@ -206,21 +279,3 @@ class Seeder(object):
             arcpy.env.workspace = _workspace
 
         return line
-
-    def filter_rows_by_model(self, rows):
-        models = {
-            #: {'Status': 'Project', 'SHAPE@': <Polygon>, 'Project_FK': guid, 'GUID': guid, 'Type': 'Aquatic/Riparian'}
-            'FishPassage': [],
-            'Original': [],
-        }
-
-        for row in rows:
-            if 'model' not in row.keys():
-                models['Original'].append(row)
-
-            type = row['model']
-            del row['model']
-
-            models[type].append(row)
-
-        return models
