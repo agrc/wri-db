@@ -40,7 +40,7 @@ class Tox(TestCommand):
 
 setup(
     name="wri-dbseeder",
-    version="0.2.1",
+    version="0.3.0",
     license="MIT",
     description="ETL WRI Data",
     long_description="",
