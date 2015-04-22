@@ -38,16 +38,21 @@ class Table(object):
 
         return fields
 
-    def source_fields(self):
+    def source_fields(self, strip_bang=True, strip_unmapped=True):
         items = sorted(map(lambda x: {x[1]['order']: x[0]}, self.schema.items()))
 
         fields = []
         for field in items:
+            value = field.values()[0]
             #: ignore fields that have no source
-            if field.values()[0].startswith('*'):
+            if value.startswith('*') and strip_unmapped:
                 continue
 
-            fields.append(field.values()[0])
+            #: add duplicate field
+            if value.startswith('!') and strip_bang:
+                value = value.lstrip('!')
+
+            fields.append(value)
 
         return fields
 
@@ -69,6 +74,28 @@ class Table(object):
         items = map(lambda x: (x['order'], x['etl']), items)
 
         return items
+
+    def merge_data(self, row):
+        data = []
+        destination = self.destination_fields()
+        source = self.source_fields(strip_bang=False, strip_unmapped=False)
+        row_index = 0
+
+        for index, field in enumerate(source):
+            #: if the field is unmappable append None
+            if field.startswith('*'):
+                data.append((field, destination[index], None))
+
+                continue
+
+            #: get row value
+            value = row[row_index]
+
+            item = (field, destination[index], value)
+            data.append(item)
+            row_index += 1
+
+        return data
 
 
 class Points(Table):
@@ -94,21 +121,33 @@ class Points(Table):
             },
             'Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'lookup': 'other_points',
                 'order': 3
+            },
+            '!Type': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'lookup': 'other_points_code',
+                'order': 4
             },
             'Description': {
                 'type': 'string',
                 'map': 'Description',
                 'action': 'strip',
-                'order': 4
+                'order': 5
             },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 5
+                'order': 6
+            },
+            '!status': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 7
             }
         }
 
@@ -130,21 +169,33 @@ class Points(Table):
             },
             'Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'lookup': 'other_points',
                 'order': 3
+            },
+            '!Type': {
+                'type': 'string',
+                'map': 'TypeCode',
+                'lookup': 'other_points_code',
+                'order': 4
             },
             'Description': {
                 'type': 'string',
                 'map': 'Description',
                 'action': 'strip',
-                'order': 4
+                'order': 5
             },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 5
+                'order': 6
+            },
+            '*StatusCode': {
+                'type': 'string',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 7
             }
         }
 
@@ -181,27 +232,39 @@ class Guzzler(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Guzzler',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'string',
+                'map': 'TypeCode',
+                'value': 9,
+                'order': 4
             },
             'GuzzlerType': {
                 'type': 'string',
                 'map': 'SubType',
                 'lookup': 'guzzler_type',
-                'order': 4
+                'order': 5
             },
             'GuzzlerAction': {
                 'type': 'string',
                 'map': 'Action',
                 'lookup': 'structure_action',
-                'order': 5
+                'order': 6
             },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 6
+                'order': 7
+            },
+            '!Status': {
+                'type': 'string',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 8
             }
         }
 
@@ -223,27 +286,39 @@ class Guzzler(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Guzzler',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'string',
+                'map': 'TypeCode',
+                'value': 9,
+                'order': 4
             },
             'GuzzlerType': {
                 'type': 'string',
                 'map': 'SubType',
                 'lookup': 'guzzler_type',
-                'order': 4
+                'order': 5
             },
             'GuzzlerAction': {
                 'type': 'string',
                 'map': 'Action',
                 'lookup': 'structure_action',
-                'order': 5
+                'order': 6
             },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 6
+                'order': 7
+            },
+            '*StatusCode': {
+                'type': 'string',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 8
             }
         }
 
@@ -280,27 +355,39 @@ class Fence(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Fence',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 8,
+                'order': 4
             },
             'FenceType': {
                 'type': 'string',
                 'map': 'SubType',
                 'lookup': 'fence_type',
-                'order': 4
+                'order': 5
             },
             'FenceAction': {
                 'type': 'string',
                 'map': 'Action',
                 'lookup': 'structure_action',
-                'order': 5
+                'order': 6
             },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 6
+                'order': 7
+            },
+            '!status': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 8
             }
         }
 
@@ -322,27 +409,39 @@ class Fence(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Fence',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 8,
+                'order': 4
             },
             'FenceType': {
                 'type': 'string',
                 'map': 'SubType',
                 'lookup': 'fence_type',
-                'order': 4
+                'order': 5
             },
             'FenceAction': {
                 'type': 'string',
                 'map': 'Action',
                 'lookup': 'structure_action',
-                'order': 5
+                'order': 6
             },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 6
+                'order': 7
+            },
+            '*StatusCode': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 8
             }
         }
 
@@ -379,27 +478,39 @@ class Pipeline(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Pipeline',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 7,
+                'order': 4
             },
             'PipelineType': {
                 'type': 'string',
                 'map': 'SubType',
                 'lookup': 'pipeline_type',
-                'order': 4
+                'order': 5
             },
             'PipelineAction': {
                 'type': 'string',
                 'map': 'Action',
                 'lookup': 'structure_action',
-                'order': 5
+                'order': 6
             },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 6
+                'order': 7
+            },
+            '!Status': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 8
             }
         }
 
@@ -421,27 +532,39 @@ class Pipeline(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Pipeline',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 7,
+                'order': 4
             },
             'PipelineType': {
                 'type': 'string',
                 'map': 'SubType',
                 'lookup': 'pipeline_type',
-                'order': 4
+                'order': 5
             },
             'PipelineAction': {
                 'type': 'string',
                 'map': 'Action',
                 'lookup': 'structure_action',
-                'order': 5
+                'order': 6
             },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 6
+                'order': 7
+            },
+            '*StatusCode': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 8
             }
         }
 
@@ -466,8 +589,6 @@ class Dam(Table):
                 'map': 'SHAPE@',
                 'order': 0,
                 'etl': {
-                    'in': 'POLY',
-                    'out': 'LINE',
                     'method': 'poly_to_line'
                 }
             },
@@ -483,21 +604,33 @@ class Dam(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Dam',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 6,
+                'order': 4
             },
             'DamAction': {
                 'type': 'string',
                 'map': 'Action',
                 'lookup': 'structure_action',
-                'order': 4
+                'order': 5
             },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 5
+                'order': 6
+            },
+            '!Status': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 7
             }
         }
 
@@ -507,8 +640,6 @@ class Dam(Table):
                 'map': 'SHAPE@',
                 'order': 0,
                 'etl': {
-                    'in': 'POLY',
-                    'out': 'LINE',
                     'method': 'poly_to_line'
                 }
             },
@@ -524,21 +655,33 @@ class Dam(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Dam',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 6,
+                'order': 4
             },
             'DamAction': {
                 'type': 'string',
                 'map': 'Action',
                 'lookup': 'structure_action',
-                'order': 4
+                'order': 5
             },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 5
+                'order': 6
+            },
+            '*StatusCode': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 7
             }
         }
 
@@ -575,15 +718,27 @@ class AffectedArea(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Affected Area',
                 'order': 3
             },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 5,
+                'order': 4
+            },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 4
+                'order': 5
+            },
+            '!Status': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 6
             }
         }
 
@@ -605,15 +760,27 @@ class AffectedArea(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Affected Area',
                 'order': 3
             },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 5,
+                'order': 4
+            },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 4
+                'order': 5
+            },
+            '*StatusCode': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 6
             }
         }
 
@@ -650,15 +817,27 @@ class AquaticTreatmentArea(Table):
             },
             'Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'lookup': 'treatment_area',
                 'order': 3
             },
+            '*Type': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 1,
+                'order': 4
+            },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 4
+                'order': 5
+            },
+            '!Status': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 6
             }
         }
 
@@ -680,15 +859,27 @@ class AquaticTreatmentArea(Table):
             },
             'Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'lookup': 'treatment_area',
                 'order': 3
             },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 1,
+                'order': 4
+            },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 4
+                'order': 5
+            },
+            '*StatusCode': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 6
             }
         }
 
@@ -729,15 +920,27 @@ class Research(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
-                'value': 'Affected Area',
+                'map': 'TypeDescription',
+                'value': 'Research',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 5,
+                'order': 4
             },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 4
+                'order': 5
+            },
+            '!Status': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 6
             }
         }
 
@@ -759,15 +962,27 @@ class Research(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
-                'value': 'Affected Area',
+                'map': 'TypeDescription',
+                'value': 'Research',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 5,
+                'order': 4
             },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 4
+                'order': 5
+            },
+            '*StatusCode': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 6
             }
         }
 
@@ -808,15 +1023,27 @@ class TerrestrialTreatmentArea(Table):
             },
             'Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'lookup': 'treatment_area',
                 'order': 3
             },
+            '*Type': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 0,
+                'order': 4
+            },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 4
+                'order': 5
+            },
+            '!Status': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 6
             }
         }
 
@@ -838,15 +1065,27 @@ class TerrestrialTreatmentArea(Table):
             },
             'Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'lookup': 'treatment_area',
                 'order': 3
             },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 0,
+                'order': 4
+            },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 4
+                'order': 5
+            },
+            '*StatusCode': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 6
             }
         }
 
@@ -875,8 +1114,6 @@ class FishPassage(Table):
                 'map': 'SHAPE@',
                 'order': 0,
                 'etl': {
-                    'in': 'POLY',
-                    'out': 'POINT',
                     'method': 'centroid'
                 }
             },
@@ -892,15 +1129,27 @@ class FishPassage(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
-                'value': 'Fish passage structure',
+                'map': 'TypeDescription',
+                'value': 'Fish Passage Structure',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 2,
+                'order': 4
             },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 4
+                'order': 5
+            },
+            '!Status': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 6
             }
         }
 
@@ -910,8 +1159,6 @@ class FishPassage(Table):
                 'map': 'SHAPE@',
                 'order': 0,
                 'etl': {
-                    'in': 'POLY',
-                    'out': 'POINT',
                     'method': 'centroid'
                 }
             },
@@ -927,15 +1174,27 @@ class FishPassage(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
-                'value': 'Fish passage structure',
+                'map': 'TypeDescription',
+                'value': 'Fish Passage Structure',
                 'order': 3
+            },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 2,
+                'order': 4
             },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 4
+                'order': 5
+            },
+            '*StatusCode': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 6
             }
         }
         self.name = self.format_source_table('{1}Fish Passage Structure as {0}', [self.owner, final])
@@ -975,15 +1234,27 @@ class EasementAquisition(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Easement/Aquisition',
                 'order': 3
             },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 3,
+                'order': 4
+            },
             'Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 4
+                'order': 5
+            },
+            '!Status': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'lookup': 'status_code',
+                'order': 6
             }
         }
 
@@ -1005,15 +1276,27 @@ class EasementAquisition(Table):
             },
             '*Type': {
                 'type': 'string',
-                'map': 'Type',
+                'map': 'TypeDescription',
                 'value': 'Easement/Aquisition',
                 'order': 3
             },
+            '*TypeCode': {
+                'type': 'int',
+                'map': 'TypeCode',
+                'value': 3,
+                'order': 4
+            },
             '*Status': {
                 'type': 'string',
-                'map': 'Status',
+                'map': 'StatusDescription',
                 'value': 'Complete',
-                'order': 4
+                'order': 5
+            },
+            '*StatusCode': {
+                'type': 'int',
+                'map': 'StatusCode',
+                'value': 3,
+                'order': 6
             }
         }
 
@@ -1037,6 +1320,22 @@ class Lookup(object):
     def __init__(self):
         super(Lookup, self).__init__()
 
+    feature_type = {
+        0: 'Terrestrial',
+        1: 'Aquatic/Riparian',
+        2: 'Fish Passage Structure',
+        3: 'Easement/Aquisition',
+        4: 'Affected Area',
+        5: 'Research',
+        6: 'Dam',
+        7: 'Pipeline',
+        8: 'Fence',
+        9: 'Guzzler',
+        10: 'Trough',
+        11: 'Water Control Structure',
+        12: 'Other'
+    }
+
     treatment_area = {
         1: 'Terrestrial',
         2: 'Aquatic/Riparian'
@@ -1048,13 +1347,30 @@ class Lookup(object):
         2: 'Project',
         3: 'Complete',
         4: 'Cancelled',
-        5: 'Cancelled'
+        5: 'Cancelled',
+        6: 'Pending Complete'
+    }
+
+    status_code = {
+        0: 0,
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 5,
+        5: 5,
+        6: 6
     }
 
     other_points = {
         1: 'Trough',
         2: 'Water Control Structure',
         3: 'Other'
+    }
+
+    other_points_code = {
+        1: 10,
+        2: 11,
+        3: 12
     }
 
     structure_action = {

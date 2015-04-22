@@ -7,7 +7,6 @@ dbseeder
 the dbseeder module
 '''
 
-import arcpy
 import models
 import timeit
 from functools import partial
@@ -73,6 +72,8 @@ class Seeder(object):
             self.locations[key] = ensure_absolute_path(locations[key])
 
     def process(self):
+        import arcpy
+
         self.set_geometry_types(self.locations['destination'])
         total_start = timeit.default_timer()
 
@@ -127,8 +128,10 @@ class Seeder(object):
         print('finished in {}'.format(round(total_end - total_start, 2)))
 
     def update_status(self, locations):
+        import arcpy
+
         where_clause = self._get_where_clause(arcpy, locations['source'])
-        fields = ['Status']
+        fields = ['StatusDescription', 'StatusCode']
 
         updated = 0
         arcpy.env.workspace = locations['destination']
@@ -137,6 +140,8 @@ class Seeder(object):
                                    field_names=fields) as poly_cursor:
             for row in poly_cursor:
                 row[0] = 'Pending Complete'
+                row[1] = 6
+
                 poly_cursor.updateRow(row)
                 updated += 1
 
@@ -145,6 +150,8 @@ class Seeder(object):
                                    field_names=fields) as point_cursor:
             for row in point_cursor:
                 row[0] = 'Pending Complete'
+                row[1] = 6
+
                 point_cursor.updateRow(row)
                 updated += 1
 
@@ -153,6 +160,8 @@ class Seeder(object):
                                    field_names=fields) as line_cursor:
             for row in line_cursor:
                 row[0] = 'Pending Complete'
+                row[1] = 6
+
                 line_cursor.updateRow(row)
                 updated += 1
 
@@ -187,67 +196,57 @@ class Seeder(object):
 
         return where_clause.format(','.join(projects))
 
-    def format_esri_guid(self, guid):
-        return '\'{{{}}}\''.format(guid)
-
     def _etl_row(self, model, row):
         #: (<PointGeometry, guid, guid, 3.0, u'windmill', 5)
 
-        source_data = zip(model.source_fields(), row)
-        unmapped_fields = model.unmapped_fields()
-        etl_fields = model.etl_fields()
+        source_data = model.merge_data(row)
 
         def etl_row(item):
-            field = item[0]
-            value = item[1]
+            #: (source column, destination column, value)
+            source_field = item[0]
+            destination_field = item[1]
+            value = item[2]
 
-            field_info = model.schema[field]
+            field_info = model.schema[source_field]
+
+            item = (destination_field, value)
+
+            if 'value' in field_info:
+                    value = field_info['value']
+                    item = (destination_field, value)
 
             if 'lookup' in field_info:
                 values = models.Lookup.__dict__[field_info['lookup']]
                 if value in values.keys():
-                    item = (field, values[value])
+                    item = (destination_field, values[value])
 
             if 'action' in field_info:
                 if field_info['action'] == 'strip' and value:
-                    item = (field, value.strip())
+                    item = (destination_field, value.strip())
                 else:
-                    item = (field, None)
+                    item = (destination_field, None)
+
+            if 'etl' in field_info:
+                etl_info = field_info['etl']
+
+                if 'method' not in etl_info:
+                    return item
+
+                if etl_info['method'] == 'centroid':
+                    item = (destination_field, value.centroid)
+                elif etl_info['method'] == 'poly_to_line':
+                    line = self.polygon_to_line(value)
+                    item = (destination_field, line)
 
             return item
 
         row = map(etl_row, source_data)
 
-        if unmapped_fields:
-            #: (6, '*Status')
-            for field in unmapped_fields:
-                field_info = model.schema[field[1]]
-
-                if 'value' in field_info:
-                    item = field_info['value']
-                    row.insert(field[0], (field_info['map'], item))
-
-        if etl_fields:
-            #: (0, {'out': 'POINT', 'method': 'centroid', 'in': 'POLY'})
-            for field in etl_fields:
-                index = field[0]
-                etl_info = field[1]
-
-                attribute_name = row[index][0]
-                attribute_value = row[index][1]
-
-                if 'method' not in etl_info:
-                    continue
-
-                if etl_info['method'] == 'centroid':
-                    row[index] = (attribute_name, attribute_value.centroid)
-                elif etl_info['method'] == 'poly_to_line':
-                    line = self.polygon_to_line(attribute_value)
-                    row[index] = (attribute_name, line)
-
         return row
 
     def set_geometry_types(self, db, create=True):
+        import arcpy
+
         cursor = arcpy.ArcSDESQLExecute(db)
         try:
             if create:
@@ -255,13 +254,15 @@ class Seeder(object):
 
                 return
 
-            cursor.execute('delete from {} where status = \'{}\''.format('POINT', 'temporary'))
-            cursor.execute('delete from {} where status = \'{}\''.format('LINE', 'temporary'))
-            cursor.execute('delete from {} where status = \'{}\''.format('POLY', 'temporary'))
+            cursor.execute('delete from {} where StatusDescription = \'{}\''.format('POINT', 'temporary'))
+            cursor.execute('delete from {} where StatusDescription = \'{}\''.format('LINE', 'temporary'))
+            cursor.execute('delete from {} where StatusDescription = \'{}\''.format('POLY', 'temporary'))
         finally:
             del cursor
 
     def polygon_to_line(self, polygon):
+        import arcpy
+
         _workspace = arcpy.env.workspace
         arcpy.env.workspace = None
 

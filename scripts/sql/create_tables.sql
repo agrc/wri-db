@@ -2,13 +2,15 @@ DROP TABLE [Wri_Spatial].[dbo].POLY
 
 CREATE TABLE [Wri_Spatial].[dbo].POLY(
 	[FeatureID] [int] IDENTITY(1,1) NOT NULL,
-    Type nvarchar(255) NULL,
+    TypeDescription nvarchar(50) NULL,
+    TypeCode int Null,
 	GUID uniqueidentifier NOT NULL,
 	Project_FK uniqueidentifier NOT NULL,
-    Project_ID bigint NOT NULL,  
-	Status varchar(50) NULL,
+    Project_ID bigint NOT NULL,
+	StatusDescription varchar(50) NULL,
+	StatusCode int Null,
 	Shape geometry NULL,
-	PRIMARY KEY CLUSTERED 
+	PRIMARY KEY CLUSTERED
 (
 	[FeatureID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
@@ -18,16 +20,18 @@ DROP TABLE [Wri_Spatial].[dbo].POINT
 
 CREATE TABLE [Wri_Spatial].[dbo].POINT(
 	FeatureID int IDENTITY(1,1) NOT NULL,
-	Type nvarchar(50) NULL,
+	TypeDescription nvarchar(50) NULL,
+    TypeCode int Null,
 	SubType nvarchar(50) NULL,
 	Action nvarchar(255) NULL,
 	Description nvarchar(255) NULL,
 	GUID uniqueidentifier NOT NULL,
 	Project_FK uniqueidentifier NOT NULL,
     Project_ID bigint NOT NULL,
-	Status varchar(50) NULL,
+	StatusDescription varchar(50) NULL,
+	StatusCode int Null,
 	Shape geometry  NULL,
-	PRIMARY KEY CLUSTERED 
+	PRIMARY KEY CLUSTERED
 (
 	[FeatureID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
@@ -37,15 +41,17 @@ DROP TABLE [Wri_Spatial].[dbo].LINE
 
 CREATE TABLE [Wri_Spatial].[dbo].LINE(
 	FeatureID int IDENTITY(1,1) NOT NULL,
-	Type nvarchar(255) NULL,
+	TypeDescription nvarchar(50) NULL,
+    TypeCode int Null,
 	SubType nvarchar(50) NULL,
 	Action nvarchar(255) NULL,
 	GUID uniqueidentifier NOT NULL,
 	Project_FK uniqueidentifier NOT NULL,
     Project_ID bigint NOT NULL,
-	Status varchar(50) NULL,
+	StatusDescription varchar(50) NULL,
+	StatusCode int Null,
 	Shape geometry NULL,
-	PRIMARY KEY CLUSTERED 
+	PRIMARY KEY CLUSTERED
 (
 	[FeatureID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]

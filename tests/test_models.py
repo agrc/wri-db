@@ -41,6 +41,12 @@ class TestTable(unittest.TestCase):
                 'map': 'MAPPED-Status',
                 'lookup': 'status',
                 'order': 2
+            },
+            '!Status': {
+                'type': 'string',
+                'map': 'DOUBLE-Status',
+                'lookup': 'status_code',
+                'order': 3
             }
         }, {
             'SHAPE@': {
@@ -113,6 +119,7 @@ class TestTable(unittest.TestCase):
             'MAPPED-SHAPE@',
             'MAPPED-Type',
             'MAPPED-Status',
+            'DOUBLE-Status',
         ]
 
         self.assertListEqual(actual, expected)
@@ -141,6 +148,21 @@ class TestTable(unittest.TestCase):
         expected = [
             'SHAPE@',
             'Status',
+            'Status',
+        ]
+
+        self.assertListEqual(actual, expected)
+
+    def test_source_fields_strip_bang(self):
+        is_final = False
+
+        self.patient.set_schema(is_final, self.schema)
+
+        actual = self.patient.source_fields(strip_bang=False)
+        expected = [
+            'SHAPE@',
+            'Status',
+            '!Status',
         ]
 
         self.assertListEqual(actual, expected)
@@ -198,6 +220,16 @@ class TestTable(unittest.TestCase):
 
         self.assertListEqual(actual, expected)
 
+    def test_merge_data(self):
+        row = ('shape', 'status', '!status')
+
+        expected = [('SHAPE@', 'MAPPED-SHAPE@', 'shape'),
+                    ('*Type', 'MAPPED-Type', None),
+                    ('Status', 'MAPPED-Status', 'status'),
+                    ('!Status', 'DOUBLE-Status', '!status')]
+        actual = self.patient.merge_data(row)
+
+        self.assertEqual(actual, expected)
 
 if __name__ == '__main__':
     unittest.main()

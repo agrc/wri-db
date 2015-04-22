@@ -17,11 +17,12 @@ A db seeder etl tool for wri data.
     - map is the destination field
     - order is to sync the order for querying, inserting, and updating
 - fields prefixed with `*` are not found in the source and are expected to have a `value` property to insert into that field on the destintation table.
+- fields prefeixed with `!` are duplicated where you need to act on the same field twice
 
 ### Usage
 from the **/src** directory
 
-`python -m dbseeder seed "connections\WRI on itdb104sp.dts.utah.gov.sde" "connections\WRI_Spatial on (local).sde"`
+`python -m dbseeder seed "connections\WRI on (production).sde" "connections\WRI_Spatial on (local).sde"`
 
 `python -m dbseeder seed "connections\WRI on (local).sde" "connections\WRI_Spatial on (local).sde"`
 
