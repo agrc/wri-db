@@ -51,12 +51,16 @@ class Seeder(object):
         parent_directory = dirname(__file__)
         seed_sql = join(parent_directory, '..\\..\\scripts\\sql\\seed_feature_types.sql')
         status_sql = join(parent_directory, '..\\..\\scripts\\sql\\projects_without_finals.sql')
+        dedupe_features = join(parent_directory, '..\\..\\scripts\\sql\\delete_features_with_completes.sql')
 
         with open(seed_sql, 'r') as f:
             self.seed_sql = f.read()
 
         with open(status_sql, 'r') as f:
             self.status_sql = f.read()
+
+        with open(dedupe_features, 'r') as f:
+            self.dedupe_sql = f.read()
 
         def ensure_absolute_path(file):
             if not isfile(file):
@@ -123,6 +127,9 @@ class Seeder(object):
         print('Updating Pending Complete Status')
         self.update_status(self.locations)
 
+        print('Removing duplicate features')
+        self.dedup_features(self.locations)
+
         total_end = timeit.default_timer()
 
         print('finished in {}'.format(round(total_end - total_start, 2)))
@@ -166,6 +173,15 @@ class Seeder(object):
                 updated += 1
 
         print('Updated {} features'.format(updated))
+
+    def dedup_features(self, locations):
+        import arcpy
+
+        cursor = arcpy.ArcSDESQLExecute(locations['destination'])
+        try:
+            cursor.execute(self.seed_sql)
+        finally:
+            del cursor
 
     def _get_where_clause(self, arcpy, db):
         where_clause = 'Project_FK in ({})'
@@ -250,7 +266,7 @@ class Seeder(object):
         cursor = arcpy.ArcSDESQLExecute(db)
         try:
             if create:
-                cursor.execute(self.seed_sql)
+                cursor.execute(self.dedupe_sql)
 
                 return
 

@@ -1,4 +1,4 @@
-select '''' +convert(nvarchar(50), Project_FK) + '''' from WRIADMIN where status = 3 and
+select '''' + convert(nvarchar(50), Project_FK) + '''' from WRIADMIN where status = 3 and
     0 = (
         select sum (featureCount) as featureCount from (
             select count(guid) as featureCount from WRIFINALAFFECTEDAREA where CompletedProject_FK = wriadmin.project_fk
