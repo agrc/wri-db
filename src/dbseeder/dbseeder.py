@@ -8,6 +8,7 @@ the dbseeder module
 '''
 
 import models
+import re
 import timeit
 from functools import partial
 from models import Lookup
@@ -78,8 +79,11 @@ class Seeder(object):
     def process(self):
         import arcpy
 
-        self.set_geometry_types(self.locations['destination'])
+        self.set_geometry_types(arcpy, self.locations['destination'])
         total_start = timeit.default_timer()
+
+        print('Building guid to project number lookup')
+        models.Lookup.project_id = self.build_guid_ref_table(arcpy, self.locations)
 
         for model in self.table_models:
             print(model.name)
@@ -122,21 +126,19 @@ class Seeder(object):
             end = timeit.default_timer()
             print('- {} seconds'.format(round(end-start, 2)))
 
-        self.set_geometry_types(self.locations['destination'], create=False)
+        self.set_geometry_types(arcpy, self.locations['destination'], create=False)
 
         print('Updating Pending Complete Status')
-        self.update_status(self.locations)
+        self.update_status(arcpy, self.locations)
 
-        print('Removing duplicate features')
-        self.dedup_features(self.locations)
+        print('Removing Duplicate Features')
+        self.dedup_features(arcpy, self.locations)
 
         total_end = timeit.default_timer()
 
         print('finished in {}'.format(round(total_end - total_start, 2)))
 
-    def update_status(self, locations):
-        import arcpy
-
+    def update_status(self, arcpy, locations):
         where_clause = self._get_where_clause(arcpy, locations['source'])
         fields = ['StatusDescription', 'StatusCode']
 
@@ -174,12 +176,18 @@ class Seeder(object):
 
         print('Updated {} features'.format(updated))
 
-    def dedup_features(self, locations):
-        import arcpy
+    def build_guid_ref_table(self, arcpy, locations):
+        cursor = arcpy.ArcSDESQLExecute(locations['source'])
 
+        try:
+            return dict(cursor.execute('select convert(nvarchar(50), guid), project_id from wriproject'))
+        finally:
+            del cursor
+
+    def dedup_features(self, arcpy, locations):
         cursor = arcpy.ArcSDESQLExecute(locations['destination'])
         try:
-            cursor.execute(self.seed_sql)
+            cursor.execute(self.dedupe_sql)
         finally:
             del cursor
 
@@ -227,20 +235,28 @@ class Seeder(object):
 
             item = (destination_field, value)
 
+            if 'action' in field_info:
+                if field_info['action'] == 'strip' and value:
+                    value = value.strip()
+                    item = (destination_field, value)
+                elif field_info['action'] == 'stripcurly' and value:
+                    value = re.sub('[{}]', '', value)
+                    item = (destination_field, value)
+                else:
+                    value = None
+                    item = (destination_field, value)
+
             if 'value' in field_info:
                     value = field_info['value']
                     item = (destination_field, value)
 
             if 'lookup' in field_info:
                 values = models.Lookup.__dict__[field_info['lookup']]
+
                 if value in values.keys():
                     item = (destination_field, values[value])
-
-            if 'action' in field_info:
-                if field_info['action'] == 'strip' and value:
-                    item = (destination_field, value.strip())
                 else:
-                    item = (destination_field, None)
+                    print('{} not found in {}'.format(value, field_info['lookup']))
 
             if 'etl' in field_info:
                 etl_info = field_info['etl']
@@ -260,13 +276,12 @@ class Seeder(object):
 
         return row
 
-    def set_geometry_types(self, db, create=True):
-        import arcpy
-
+    def set_geometry_types(self, arcpy, db, create=True):
         cursor = arcpy.ArcSDESQLExecute(db)
+
         try:
             if create:
-                cursor.execute(self.dedupe_sql)
+                cursor.execute(self.seed_sql)
 
                 return
 

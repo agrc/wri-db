@@ -148,6 +148,12 @@ class Points(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 7
+            },
+            '!Project_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 8
             }
         }
 
@@ -196,6 +202,12 @@ class Points(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 7
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 8
             }
         }
 
@@ -265,6 +277,12 @@ class Guzzler(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 8
+            },
+            '!Project_Fk': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 9
             }
         }
 
@@ -319,6 +337,12 @@ class Guzzler(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 8
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 9
             }
         }
 
@@ -388,6 +412,12 @@ class Fence(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 8
+            },
+            '!Project_Fk': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 9
             }
         }
 
@@ -442,6 +472,12 @@ class Fence(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 8
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 9
             }
         }
 
@@ -511,6 +547,12 @@ class Pipeline(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 8
+            },
+            '!Project_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 9
             }
         }
 
@@ -565,6 +607,12 @@ class Pipeline(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 8
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 9
             }
         }
 
@@ -631,6 +679,12 @@ class Dam(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 7
+            },
+            '!Project_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 8
             }
         }
 
@@ -682,6 +736,12 @@ class Dam(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 7
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 8
             }
         }
 
@@ -739,6 +799,12 @@ class AffectedArea(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 6
+            },
+            '!Project_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
@@ -781,6 +847,12 @@ class AffectedArea(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 6
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
@@ -838,6 +910,12 @@ class AquaticTreatmentArea(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 6
+            },
+            '!Project_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
@@ -880,6 +958,12 @@ class AquaticTreatmentArea(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 6
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
@@ -941,6 +1025,12 @@ class Research(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 6
+            },
+            '!Project_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
@@ -983,6 +1073,12 @@ class Research(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 6
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
@@ -1044,6 +1140,12 @@ class TerrestrialTreatmentArea(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 6
+            },
+            '!Project_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
@@ -1086,6 +1188,12 @@ class TerrestrialTreatmentArea(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 6
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
@@ -1150,6 +1258,12 @@ class FishPassage(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 6
+            },
+            '!Project_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
@@ -1195,6 +1309,12 @@ class FishPassage(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 6
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
         self.name = self.format_source_table('{1}Fish Passage Structure as {0}', [self.owner, final])
@@ -1255,6 +1375,12 @@ class EasementAquisition(Table):
                 'map': 'StatusCode',
                 'lookup': 'status_code',
                 'order': 6
+            },
+            '!Project_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
@@ -1297,6 +1423,12 @@ class EasementAquisition(Table):
                 'map': 'StatusCode',
                 'value': 3,
                 'order': 6
+            },
+            '!CompletedProject_FK': {
+                'map': 'Project_Id',
+                'lookup': 'project_id',
+                'action': 'stripcurly',
+                'order': 7
             }
         }
 
