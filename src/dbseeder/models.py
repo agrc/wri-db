@@ -13,8 +13,8 @@ class Table(object):
     def __init__(self):
         super(Table, self).__init__()
 
-        self.owner = 'WRIADMIN'
         self.owner = 'dbo'
+        self.owner = 'WRIADMIN'
 
         self.where_clause = '1=1'
 
@@ -213,7 +213,7 @@ class Points(Table):
 
         self.name = self.format_source_table('{1}Points as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}POINTS', [self.owner, final])
-        self.destination = 'POINT'
+        self.destination = '{}.POINT'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,
@@ -348,7 +348,7 @@ class Guzzler(Table):
 
         self.name = self.format_source_table('{1}Guzzler as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}GUZZLER', [self.owner, final])
-        self.destination = 'POINT'
+        self.destination = '{}.POINT'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,
@@ -483,7 +483,7 @@ class Fence(Table):
 
         self.name = self.format_source_table('{1}Fence as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}FENCE', [self.owner, final])
-        self.destination = 'LINE'
+        self.destination = '{}.LINE'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,
@@ -618,7 +618,7 @@ class Pipeline(Table):
 
         self.name = self.format_source_table('{1}Pipeline as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}PIPELINE', [self.owner, final])
-        self.destination = 'LINE'
+        self.destination = '{}.LINE'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,
@@ -747,7 +747,7 @@ class Dam(Table):
 
         self.name = self.format_source_table('{1}Dam as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}DAM', [self.owner, final])
-        self.destination = 'LINE'
+        self.destination = '{}.LINE'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,
@@ -858,7 +858,7 @@ class AffectedArea(Table):
 
         self.name = self.format_source_table('{1}Affected Areas as {0}', [self.owner, final])
         self.source = self.format_source_table('WRI.{}.WRI{}AFFECTEDAREA', [self.owner, final])
-        self.destination = 'POLY'
+        self.destination = '{}.POLY'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,
@@ -973,7 +973,7 @@ class AquaticTreatmentArea(Table):
         self.where_clause = self.format_source_table('Type = 2 and guid not in (select distinct(TreatmentArea_FK) ' +
                                                      'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION ' +
                                                      'where ActionCode in (1,6))', [self.owner, final])
-        self.destination = 'POLY'
+        self.destination = '{}.POLY'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,
@@ -1088,7 +1088,7 @@ class Research(Table):
         self.where_clause = self.format_source_table('Type = 2 and guid in (select distinct(TreatmentArea_FK) ' +
                                                      'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION where ActionCode = 6)',
                                                      [self.owner, final])
-        self.destination = 'POLY'
+        self.destination = '{}.POLY'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,
@@ -1203,7 +1203,7 @@ class TerrestrialTreatmentArea(Table):
         self.where_clause = self.format_source_table('Type = 1 and guid not in (select distinct(TreatmentArea_FK) ' +
                                                      'from WRI.{0}.WRI{1}TerrestrialACTION where ' +
                                                      'ActionCode in (24,25))', [self.owner, final])
-        self.destination = 'POLY'
+        self.destination = '{}.POLY'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,
@@ -1323,7 +1323,7 @@ class FishPassage(Table):
         self.where_clause = self.format_source_table('Type = 2 and guid in (select distinct(TreatmentArea_FK) ' +
                                                      'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION where ActionCode = 1)',
                                                      [self.owner, final])
-        self.destination = 'POINT'
+        self.destination = '{}.POINT'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,
@@ -1439,7 +1439,7 @@ class EasementAquisition(Table):
                                                      'from WRI.{0}.WRI{1}TerrestrialACTION where ' +
                                                      'ActionCode in (24,25))',
                                                      [self.owner, final])
-        self.destination = 'POLY'
+        self.destination = '{}.POLY'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
                                           schema,

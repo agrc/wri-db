@@ -144,7 +144,7 @@ class Seeder(object):
 
         updated = 0
         arcpy.env.workspace = locations['destination']
-        with arcpy.da.UpdateCursor(in_table='POLY',
+        with arcpy.da.UpdateCursor(in_table='dbo.POLY',
                                    where_clause=where_clause,
                                    field_names=fields) as poly_cursor:
             for row in poly_cursor:
@@ -154,7 +154,7 @@ class Seeder(object):
                 poly_cursor.updateRow(row)
                 updated += 1
 
-        with arcpy.da.UpdateCursor(in_table='POINT',
+        with arcpy.da.UpdateCursor(in_table='dbo.POINT',
                                    where_clause=where_clause,
                                    field_names=fields) as point_cursor:
             for row in point_cursor:
@@ -164,7 +164,7 @@ class Seeder(object):
                 point_cursor.updateRow(row)
                 updated += 1
 
-        with arcpy.da.UpdateCursor(in_table='LINE',
+        with arcpy.da.UpdateCursor(in_table='dbo.LINE',
                                    where_clause=where_clause,
                                    field_names=fields) as line_cursor:
             for row in line_cursor:
@@ -285,9 +285,9 @@ class Seeder(object):
 
                 return
 
-            cursor.execute('delete from {} where StatusDescription = \'{}\''.format('POINT', 'temporary'))
-            cursor.execute('delete from {} where StatusDescription = \'{}\''.format('LINE', 'temporary'))
-            cursor.execute('delete from {} where StatusDescription = \'{}\''.format('POLY', 'temporary'))
+            cursor.execute('delete from {} where StatusDescription = \'{}\''.format('dbo.POINT', 'temporary'))
+            cursor.execute('delete from {} where StatusDescription = \'{}\''.format('dbo.LINE', 'temporary'))
+            cursor.execute('delete from {} where StatusDescription = \'{}\''.format('dbo.POLY', 'temporary'))
         finally:
             del cursor
 
