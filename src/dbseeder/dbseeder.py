@@ -134,6 +134,9 @@ class Seeder(object):
         print('Removing Duplicate Features')
         self.dedup_features(arcpy, self.locations)
 
+        print('Updating Project Status and Centroids')
+        self.update_project_details(arcpy, self.locations)
+
         total_end = timeit.default_timer()
 
         print('finished in {}'.format(round(total_end - total_start, 2)))
@@ -190,6 +193,103 @@ class Seeder(object):
             cursor.execute(self.dedupe_sql)
         finally:
             del cursor
+
+    def update_project_details(self, arcpy, locations):
+        #: query projects with features and get the unique project id's
+        #: get the project status and the features to create centroids
+        where_clause = '1=1'
+        fields = ['Project_id', 'StatusDescription', 'SHAPE@TRUECENTROID']
+        project_information = {}
+
+        arcpy.env.workspace = locations['destination']
+
+        with arcpy.da.SearchCursor(in_table='dbo.POLY',
+                                   where_clause=where_clause,
+                                   field_names=fields) as poly_cursor:
+            for row in poly_cursor:
+                if project_information.has_key(row[0]):
+                    #: union centroid
+
+                    current = project_information[row[0]]
+                    current_point = current[1]
+                    new_point = arcpy.Point(row[2][0],row[2][1])
+
+                    points = arcpy.Array([current_point, new_point])
+
+                    multipoint = arcpy.Multipoint(points)
+                    updated = (current[0], multipoint.trueCentroid)
+
+                    project_information[row[0]] = updated
+                else:
+                    project_information[row[0]] = (row[1], arcpy.Point(row[2][0], row[2][1]))
+
+        with arcpy.da.SearchCursor(in_table='dbo.LINE',
+                                   where_clause=where_clause,
+                                   field_names=fields) as line_cursor:
+            if project_information.has_key(row[0]):
+                #: union centroid
+
+                current = project_information[row[0]]
+                current_point = current[1]
+                new_point = arcpy.Point(row[2][0],row[2][1])
+
+                points = arcpy.Array([current_point, new_point])
+
+                multipoint = arcpy.Multipoint(points)
+                updated = (current[0], multipoint.trueCentroid)
+
+                project_information[row[0]] = updated
+            else:
+                project_information[row[0]] = (row[1], arcpy.Point(row[2][0], row[2][1]))
+
+
+        #: points don't have centroids
+        fields[2] = 'SHAPE@XY'
+
+        with arcpy.da.SearchCursor(in_table='dbo.POINT',
+                                   where_clause=where_clause,
+                                   field_names=fields) as point_cursor:
+            for row in point_cursor:
+                if project_information.has_key(row[0]):
+                    #: union centroid
+
+                    current = project_information[row[0]]
+                    current_point = current[1]
+                    new_point = arcpy.Point(row[2][0],row[2][1])
+
+                    points = arcpy.Array([current_point, new_point])
+
+                    multipoint = arcpy.Multipoint(points)
+                    updated = (current[0], multipoint.trueCentroid)
+
+                    project_information[row[0]] = updated
+                else:
+                    project_information[row[0]] = (row[1], arcpy.Point(row[2][0], row[2][1]))
+
+
+        project_id_strings = map(lambda id: str(id), project_information.keys())
+
+        where_clause = 'Project_id in ({})'.format(','.join(project_id_strings))
+
+        #: might need this to seed the project table for use in arcmap
+        # cursor = arcpy.ArcSDESQLExecute(locations['destination'])
+        # try:
+        #     cursor.execute("update PROJECT set Centroid=geometry::STGeomFromText('POINT (242463.96999999974 4209278.1300000008)', 26912) where project_id = 1663",
+        # finally:
+        #     del cursor
+
+        with arcpy.da.UpdateCursor(in_table='dbo.Project',
+                                   where_clause=where_clause,
+                                   field_names=['Project_ID', 'Status', 'Centroid']) as project_cursor:
+            for row in project_cursor:
+                key = row[0]
+
+                status_centroid = project_information[key]
+                row[1] = status_centroid[0]
+                row[2] = status_centroid[1]
+
+                project_cursor.updateRow(row)
+
 
     def _get_where_clause(self, arcpy, db):
         where_clause = 'Project_FK in ({})'
