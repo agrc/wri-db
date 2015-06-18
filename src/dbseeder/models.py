@@ -1456,7 +1456,7 @@ class Lookup(object):
         0: 'Terrestrial',
         1: 'Aquatic/Riparian',
         2: 'Fish Passage Structure',
-        3: 'Easement/Aquisition',
+        3: 'Easement/Acquisition',
         4: 'Affected Area',
         5: 'Research',
         6: 'Dam',
