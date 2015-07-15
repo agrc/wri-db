@@ -122,8 +122,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', 'Guzzler'),
                     ('TypeCode', 9),
-                    ('SubType', 'Big Game'),
-                    ('Action', 'Removal'),
+                    ('FeatureSubTypeDescription', 'Big Game'),
+                    ('ActionDescription', 'Removal'),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', 2),
                     ('Project_Id', 1)]
@@ -142,8 +142,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', 'Guzzler'),
                     ('TypeCode', 9),
-                    ('SubType', 'Big Game'),
-                    ('Action', 'Removal'),
+                    ('FeatureSubTypeDescription', 'Big Game'),
+                    ('ActionDescription', 'Removal'),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 4),
                     ('Project_Id', 2)]
@@ -173,8 +173,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('SubType', sub_type),
-                    ('Action', action),
+                    ('FeatureSubTypeDescription', sub_type),
+                    ('ActionDescription', action),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', 2),
                     ('Project_Id', 1)]
@@ -202,8 +202,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('SubType', sub_type),
-                    ('Action', action),
+                    ('FeatureSubTypeDescription', sub_type),
+                    ('ActionDescription', action),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 4),
                     ('Project_Id', 2)]
@@ -233,8 +233,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('SubType', sub_type),
-                    ('Action', action),
+                    ('FeatureSubTypeDescription', sub_type),
+                    ('ActionDescription', action),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', 2),
                     ('Project_Id', 1)]
@@ -262,8 +262,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('SubType', sub_type),
-                    ('Action', action),
+                    ('FeatureSubTypeDescription', sub_type),
+                    ('ActionDescription', action),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 4),
                     ('Project_Id', 2)]
@@ -291,7 +291,7 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('Action', action),
+                    ('ActionDescription', action),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', 2),
                     ('Project_Id', 1)]
@@ -320,7 +320,7 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('Action', action),
+                    ('ActionDescription', action),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 4),
                     ('Project_Id', 2)]

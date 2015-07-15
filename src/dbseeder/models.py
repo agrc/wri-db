@@ -256,13 +256,13 @@ class Guzzler(Table):
             },
             'GuzzlerType': {
                 'type': 'string',
-                'map': 'SubType',
+                'map': 'FeatureSubTypeDescription',
                 'lookup': 'guzzler_type',
                 'order': 5
             },
             'GuzzlerAction': {
                 'type': 'string',
-                'map': 'Action',
+                'map': 'ActionDescription',
                 'lookup': 'structure_action',
                 'order': 6
             },
@@ -316,13 +316,13 @@ class Guzzler(Table):
             },
             'GuzzlerType': {
                 'type': 'string',
-                'map': 'SubType',
+                'map': 'FeatureSubTypeDescription',
                 'lookup': 'guzzler_type',
                 'order': 5
             },
             'GuzzlerAction': {
                 'type': 'string',
-                'map': 'Action',
+                'map': 'ActionDescription',
                 'lookup': 'structure_action',
                 'order': 6
             },
@@ -391,13 +391,13 @@ class Fence(Table):
             },
             'FenceType': {
                 'type': 'string',
-                'map': 'SubType',
+                'map': 'FeatureSubTypeDescription',
                 'lookup': 'fence_type',
                 'order': 5
             },
             'FenceAction': {
                 'type': 'string',
-                'map': 'Action',
+                'map': 'ActionDescription',
                 'lookup': 'structure_action',
                 'order': 6
             },
@@ -451,13 +451,13 @@ class Fence(Table):
             },
             'FenceType': {
                 'type': 'string',
-                'map': 'SubType',
+                'map': 'FeatureSubTypeDescription',
                 'lookup': 'fence_type',
                 'order': 5
             },
             'FenceAction': {
                 'type': 'string',
-                'map': 'Action',
+                'map': 'ActionDescription',
                 'lookup': 'structure_action',
                 'order': 6
             },
@@ -526,13 +526,13 @@ class Pipeline(Table):
             },
             'PipelineType': {
                 'type': 'string',
-                'map': 'SubType',
+                'map': 'FeatureSubTypeDescription',
                 'lookup': 'pipeline_type',
                 'order': 5
             },
             'PipelineAction': {
                 'type': 'string',
-                'map': 'Action',
+                'map': 'ActionDescription',
                 'lookup': 'structure_action',
                 'order': 6
             },
@@ -586,13 +586,13 @@ class Pipeline(Table):
             },
             'PipelineType': {
                 'type': 'string',
-                'map': 'SubType',
+                'map': 'FeatureSubTypeDescription',
                 'lookup': 'pipeline_type',
                 'order': 5
             },
             'PipelineAction': {
                 'type': 'string',
-                'map': 'Action',
+                'map': 'ActionDescription',
                 'lookup': 'structure_action',
                 'order': 6
             },
@@ -664,7 +664,7 @@ class Dam(Table):
             },
             'DamAction': {
                 'type': 'string',
-                'map': 'Action',
+                'map': 'ActionDescription',
                 'lookup': 'structure_action',
                 'order': 5
             },
@@ -721,7 +721,7 @@ class Dam(Table):
             },
             'DamAction': {
                 'type': 'string',
-                'map': 'Action',
+                'map': 'ActionDescription',
                 'lookup': 'structure_action',
                 'order': 5
             },
