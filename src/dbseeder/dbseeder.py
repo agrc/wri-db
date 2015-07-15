@@ -143,41 +143,23 @@ class Seeder(object):
 
     def update_status(self, arcpy, locations):
         where_clause = self._get_where_clause(arcpy, locations['source'])
-        fields = ['StatusDescription', 'StatusCode']
 
-        updated = 0
-        arcpy.env.workspace = locations['destination']
-        with arcpy.da.UpdateCursor(in_table='dbo.POLY',
-                                   where_clause=where_clause,
-                                   field_names=fields) as poly_cursor:
-            for row in poly_cursor:
-                row[0] = 'Pending Complete'
-                row[1] = 6
+        cursor = arcpy.ArcSDESQLExecute(locations['destination'])
 
-                poly_cursor.updateRow(row)
-                updated += 1
+        cursor.execute('update dbo.Poly ' +
+                       'set StatusDescription = \'{}\', '.format(Lookup.status[3]) +
+                       'StatusCode = {} where {}'.format(3, where_clause))
 
-        with arcpy.da.UpdateCursor(in_table='dbo.POINT',
-                                   where_clause=where_clause,
-                                   field_names=fields) as point_cursor:
-            for row in point_cursor:
-                row[0] = 'Pending Complete'
-                row[1] = 6
+        cursor.execute('update dbo.Point ' +
+                       'set StatusDescription = \'{}\', '.format(Lookup.status[3]) +
+                       'StatusCode = {} where {}'.format(3, where_clause))
 
-                point_cursor.updateRow(row)
-                updated += 1
+        cursor.execute('update dbo.Line ' +
+                       'set StatusDescription = \'{}\', '.format(Lookup.status[3]) +
+                       'StatusCode = {} where {}'.format(3, where_clause))
+        del cursor
 
-        with arcpy.da.UpdateCursor(in_table='dbo.LINE',
-                                   where_clause=where_clause,
-                                   field_names=fields) as line_cursor:
-            for row in line_cursor:
-                row[0] = 'Pending Complete'
-                row[1] = 6
-
-                line_cursor.updateRow(row)
-                updated += 1
-
-        print('Updated {} features'.format(updated))
+        print('Updated features')
 
     def build_guid_ref_table(self, arcpy, locations):
         cursor = arcpy.ArcSDESQLExecute(locations['source'])
