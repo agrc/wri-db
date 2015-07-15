@@ -194,13 +194,13 @@ class Points(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 6
             },
             '*StatusCode': {
                 'type': 'string',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 7
             },
             '!CompletedProject_FK': {
@@ -329,13 +329,13 @@ class Guzzler(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 7
             },
             '*StatusCode': {
                 'type': 'string',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 8
             },
             '!CompletedProject_FK': {
@@ -464,13 +464,13 @@ class Fence(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 7
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 8
             },
             '!CompletedProject_FK': {
@@ -599,13 +599,13 @@ class Pipeline(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 7
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 8
             },
             '!CompletedProject_FK': {
@@ -728,13 +728,13 @@ class Dam(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 6
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 7
             },
             '!CompletedProject_FK': {
@@ -839,13 +839,13 @@ class AffectedArea(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 5
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -950,13 +950,13 @@ class AquaticTreatmentArea(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 5
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -1065,13 +1065,13 @@ class Research(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 5
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -1180,13 +1180,13 @@ class TerrestrialTreatmentArea(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 5
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -1301,13 +1301,13 @@ class FishPassage(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 5
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -1355,7 +1355,7 @@ class EasementAquisition(Table):
             '*Type': {
                 'type': 'string',
                 'map': 'TypeDescription',
-                'value': 'Easement/Aquisition',
+                'value': 'Easement/Acquisition',
                 'order': 3
             },
             '*TypeCode': {
@@ -1403,7 +1403,7 @@ class EasementAquisition(Table):
             '*Type': {
                 'type': 'string',
                 'map': 'TypeDescription',
-                'value': 'Easement/Aquisition',
+                'value': 'Easement/Acquisition',
                 'order': 3
             },
             '*TypeCode': {
@@ -1415,13 +1415,13 @@ class EasementAquisition(Table):
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
-                'value': 'Complete',
+                'value': 'Completed',
                 'order': 5
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 3,
+                'value': 4,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -1474,23 +1474,19 @@ class Lookup(object):
     }
 
     status = {
-        0: 'Draft',
-        1: 'Proposal',
-        2: 'Project',
-        3: 'Complete',
-        4: 'Cancelled',
+        1: 'Proposed',
+        2: 'Current',
+        3: 'Pending Completed',
+        4: 'Completed',
         5: 'Cancelled',
-        6: 'Pending Complete'
     }
 
     status_code = {
-        0: 0,
         1: 1,
         2: 2,
-        3: 3,
+        3: 4,
         4: 5,
         5: 5,
-        6: 6
     }
 
     other_points = {

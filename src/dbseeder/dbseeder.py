@@ -207,12 +207,12 @@ class Seeder(object):
                                    where_clause=where_clause,
                                    field_names=fields) as poly_cursor:
             for row in poly_cursor:
-                if project_information.has_key(row[0]):
+                if row[0] in project_information:
                     #: union centroid
 
                     current = project_information[row[0]]
                     current_point = current[1]
-                    new_point = arcpy.Point(row[2][0],row[2][1])
+                    new_point = arcpy.Point(row[2][0], row[2][1])
 
                     points = arcpy.Array([current_point, new_point])
 
@@ -226,12 +226,12 @@ class Seeder(object):
         with arcpy.da.SearchCursor(in_table='dbo.LINE',
                                    where_clause=where_clause,
                                    field_names=fields) as line_cursor:
-            if project_information.has_key(row[0]):
+            if row[0] in project_information:
                 #: union centroid
 
                 current = project_information[row[0]]
                 current_point = current[1]
-                new_point = arcpy.Point(row[2][0],row[2][1])
+                new_point = arcpy.Point(row[2][0], row[2][1])
 
                 points = arcpy.Array([current_point, new_point])
 
@@ -242,7 +242,6 @@ class Seeder(object):
             else:
                 project_information[row[0]] = (row[1], arcpy.Point(row[2][0], row[2][1]))
 
-
         #: points don't have centroids
         fields[2] = 'SHAPE@XY'
 
@@ -250,12 +249,12 @@ class Seeder(object):
                                    where_clause=where_clause,
                                    field_names=fields) as point_cursor:
             for row in point_cursor:
-                if project_information.has_key(row[0]):
+                if row[0] in project_information:
                     #: union centroid
 
                     current = project_information[row[0]]
                     current_point = current[1]
-                    new_point = arcpy.Point(row[2][0],row[2][1])
+                    new_point = arcpy.Point(row[2][0], row[2][1])
 
                     points = arcpy.Array([current_point, new_point])
 
@@ -266,7 +265,6 @@ class Seeder(object):
                 else:
                     project_information[row[0]] = (row[1], arcpy.Point(row[2][0], row[2][1]))
 
-
         project_id_strings = map(lambda id: str(id), project_information.keys())
 
         where_clause = 'Project_id in ({})'.format(','.join(project_id_strings))
@@ -274,7 +272,8 @@ class Seeder(object):
         #: might need this to seed the project table for use in arcmap
         # cursor = arcpy.ArcSDESQLExecute(locations['destination'])
         # try:
-        #     cursor.execute("update PROJECT set Centroid=geometry::STGeomFromText('POINT (242463.96999999974 4209278.1300000008)', 26912) where project_id = 1663",
+        #     cursor.execute("update PROJECT set
+        #                   Centroid=geometry::STGeomFromText('POINT (242463.96999999974 4209278.1300000008)', 26912) where project_id = 1663",
         # finally:
         #     del cursor
 
@@ -289,7 +288,6 @@ class Seeder(object):
                 row[2] = status_centroid[1]
 
                 project_cursor.updateRow(row)
-
 
     def _get_where_clause(self, arcpy, db):
         where_clause = 'Project_FK in ({})'
