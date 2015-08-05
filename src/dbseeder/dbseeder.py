@@ -23,28 +23,28 @@ class Seeder(object):
         self.Lookup = Lookup()
 
         self.table_models = [
-            models.Points(),
-            models.Points(final=True),
-            models.Guzzler(),
-            models.Guzzler(final=True),
-            models.Fence(),
-            models.Fence(final=True),
-            models.Pipeline(),
-            models.Pipeline(final=True),
-            models.Dam(),
-            models.Dam(final=True),
-            models.AffectedArea(),
-            models.AffectedArea(final=True),
-            models.Research(),
-            models.Research(final=True),
-            models.FishPassage(),
-            models.FishPassage(final=True),
-            models.EasementAquisition(),
-            models.EasementAquisition(final=True),
-            models.AquaticTreatmentArea(),
-            models.AquaticTreatmentArea(final=True),
-            models.TerrestrialTreatmentArea(),
-            models.TerrestrialTreatmentArea(final=True),
+            # models.Points(),
+            # models.Points(final=True),
+            # models.Guzzler(),
+            # models.Guzzler(final=True),
+            # models.Fence(),
+            # models.Fence(final=True),
+            # models.Pipeline(),
+            # models.Pipeline(final=True),
+            # models.Dam(),
+            # models.Dam(final=True),
+            # models.AffectedArea(),
+            # models.AffectedArea(final=True),
+            # models.Research(),
+            # models.Research(final=True),
+            # models.FishPassage(),
+            # models.FishPassage(final=True),
+            # models.EasementAquisition(),
+            # models.EasementAquisition(final=True),
+            # models.AquaticTreatmentArea(),
+            # models.AquaticTreatmentArea(final=True),
+            # models.TerrestrialTreatmentArea(),
+            # models.TerrestrialTreatmentArea(final=True),
         ]
 
         self.scratch_line = '%scratchGDB%\\wri_dbseeder_line'
@@ -53,6 +53,7 @@ class Seeder(object):
         seed_sql = join(parent_directory, '..\\..\\scripts\\sql\\seed_feature_types.sql')
         status_sql = join(parent_directory, '..\\..\\scripts\\sql\\projects_without_finals.sql')
         dedupe_features = join(parent_directory, '..\\..\\scripts\\sql\\delete_features_with_completes.sql')
+        truncate_features = join(parent_directory, '..\\..\\scripts\\sql\\truncate_spatial_tables.sql')
 
         with open(seed_sql, 'r') as f:
             self.seed_sql = f.read()
@@ -62,6 +63,9 @@ class Seeder(object):
 
         with open(dedupe_features, 'r') as f:
             self.dedupe_sql = f.read()
+
+        with open(truncate_features, 'r') as f:
+            self.truncate_sql = f.read()
 
         def ensure_absolute_path(file):
             if not isfile(file):
@@ -79,8 +83,17 @@ class Seeder(object):
     def process(self):
         import arcpy
 
-        self.set_geometry_types(arcpy, self.locations['destination'])
         total_start = timeit.default_timer()
+
+        print('Truncating spatial table features')
+        # cursor = arcpy.ArcSDESQLExecute(self.locations['destination'])
+        # try:
+        #     cursor.execute(self.truncate_sql)
+        # finally:
+        #     del cursor
+        #
+        # print('Seeding table geometry types')
+        # self.set_geometry_types(arcpy, self.locations['destination'])
 
         print('Building guid to project number lookup')
         models.Lookup.project_id = self.build_guid_ref_table(arcpy, self.locations)
@@ -134,8 +147,8 @@ class Seeder(object):
         print('Removing Duplicate Features')
         self.dedup_features(arcpy, self.locations)
 
-        print('Updating Project Status and Centroids')
-        self.update_project_details(arcpy, self.locations)
+        print('Updating Project Centroids')
+        self.update_project_centroids(arcpy, self.locations)
 
         total_end = timeit.default_timer()
 
@@ -144,19 +157,30 @@ class Seeder(object):
     def update_status(self, arcpy, locations):
         where_clause = self._get_where_clause(arcpy, locations['source'])
 
+        codes = None
+        for pair in Lookup.new_status.iteritems():
+            if pair[1] == 'Pending Completed':
+                codes = pair
+
         cursor = arcpy.ArcSDESQLExecute(locations['destination'])
 
         cursor.execute('update dbo.Poly ' +
-                       'set StatusDescription = \'{}\', '.format(Lookup.status[3]) +
-                       'StatusCode = {} where {}'.format(3, where_clause))
+                       'set StatusDescription = \'{}\', '.format(codes[1]) +
+                       'StatusCode = {} where {}'.format(codes[0], where_clause))
 
         cursor.execute('update dbo.Point ' +
-                       'set StatusDescription = \'{}\', '.format(Lookup.status[3]) +
-                       'StatusCode = {} where {}'.format(3, where_clause))
+                       'set StatusDescription = \'{}\', '.format(codes[1]) +
+                       'StatusCode = {} where {}'.format(codes[0], where_clause))
 
         cursor.execute('update dbo.Line ' +
-                       'set StatusDescription = \'{}\', '.format(Lookup.status[3]) +
-                       'StatusCode = {} where {}'.format(3, where_clause))
+                       'set StatusDescription = \'{}\', '.format(codes[1]) +
+                       'StatusCode = {} where {}'.format(codes[0], where_clause))
+
+        where_clause = where_clause.replace('Project_FK', 'GUID')
+        cursor.execute('update dbo.Project ' +
+                       'set Status = \'{}\', '.format(codes[1]) +
+                       'StatusID = {} where {}'.format(codes[0], where_clause))
+
         del cursor
 
         print('Updated features')
@@ -176,76 +200,36 @@ class Seeder(object):
         finally:
             del cursor
 
-    def update_project_details(self, arcpy, locations):
+    def update_project_centroids(self, arcpy, locations):
         #: query projects with features and get the unique project id's
         #: get the project status and the features to create centroids
         where_clause = '1=1'
-        fields = ['Project_id', 'StatusDescription', 'SHAPE@TRUECENTROID']
+        fields = ['Project_id', 'SHAPE@TRUECENTROID']
         project_information = {}
 
         arcpy.env.workspace = locations['destination']
 
-        with arcpy.da.SearchCursor(in_table='dbo.POLY',
-                                   where_clause=where_clause,
-                                   field_names=fields) as poly_cursor:
-            for row in poly_cursor:
-                if row[0] in project_information:
-                    #: union centroid
-
-                    current = project_information[row[0]]
-                    current_point = current[1]
-                    new_point = arcpy.Point(row[2][0], row[2][1])
-
-                    points = arcpy.Array([current_point, new_point])
-
-                    multipoint = arcpy.Multipoint(points)
-                    updated = (current[0], multipoint.trueCentroid)
-
-                    project_information[row[0]] = updated
-                else:
-                    project_information[row[0]] = (row[1], arcpy.Point(row[2][0], row[2][1]))
-
-        with arcpy.da.SearchCursor(in_table='dbo.LINE',
-                                   where_clause=where_clause,
-                                   field_names=fields) as line_cursor:
+        def update_point_for_project(row):
             if row[0] in project_information:
-                #: union centroid
-
-                current = project_information[row[0]]
-                current_point = current[1]
-                new_point = arcpy.Point(row[2][0], row[2][1])
-
-                points = arcpy.Array([current_point, new_point])
-
-                multipoint = arcpy.Multipoint(points)
-                updated = (current[0], multipoint.trueCentroid)
-
-                project_information[row[0]] = updated
+                new_point = arcpy.Point(row[1][0], row[1][1])
+                project_information[row[0]].add(new_point)
             else:
-                project_information[row[0]] = (row[1], arcpy.Point(row[2][0], row[2][1]))
+                project_information[row[0]] = arcpy.Array([arcpy.Point(row[1][0], row[1][1])])
 
-        #: points don't have centroids
-        fields[2] = 'SHAPE@XY'
+        tables = {
+            'dbo.POLY': fields,
+            'dbo.LINE': fields,
+            'dbo.POINT': fields
+        }
 
-        with arcpy.da.SearchCursor(in_table='dbo.POINT',
-                                   where_clause=where_clause,
-                                   field_names=fields) as point_cursor:
-            for row in point_cursor:
-                if row[0] in project_information:
-                    #: union centroid
+        tables['dbo.POINT'][1] = 'SHAPE@XY'
 
-                    current = project_information[row[0]]
-                    current_point = current[1]
-                    new_point = arcpy.Point(row[2][0], row[2][1])
-
-                    points = arcpy.Array([current_point, new_point])
-
-                    multipoint = arcpy.Multipoint(points)
-                    updated = (current[0], multipoint.trueCentroid)
-
-                    project_information[row[0]] = updated
-                else:
-                    project_information[row[0]] = (row[1], arcpy.Point(row[2][0], row[2][1]))
+        for table in tables.iteritems():
+            with arcpy.da.SearchCursor(in_table=table[0],
+                                       where_clause=where_clause,
+                                       field_names=table[1]) as cursor:
+                for row in cursor:
+                    update_point_for_project(row)
 
         project_id_strings = map(lambda id: str(id), project_information.keys())
 
@@ -261,13 +245,14 @@ class Seeder(object):
 
         with arcpy.da.UpdateCursor(in_table='dbo.Project',
                                    where_clause=where_clause,
-                                   field_names=['Project_ID', 'Status', 'Centroid']) as project_cursor:
+                                   field_names=['Project_ID', 'Centroid']) as project_cursor:
             for row in project_cursor:
                 key = row[0]
 
-                status_centroid = project_information[key]
-                row[1] = status_centroid[0]
-                row[2] = status_centroid[1]
+                points = project_information[key]
+                multipoint = arcpy.Multipoint(points)
+
+                row[1] = multipoint.trueCentroid
 
                 project_cursor.updateRow(row)
 

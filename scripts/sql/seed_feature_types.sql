@@ -1,18 +1,18 @@
-insert into POINT (GUID,Project_FK,Project_ID,Shape,StatusDescription)
+insert into dbo.[POINT] (GUID,Project_FK,Project_ID,Shape,StatusDescription)
 values ('00000000-0000-0000-0000-000000000001',
         '00000000-0000-0000-0000-000000000001',
         -1,
         geometry::STGeomFromText('MULTIPOINT ((242463.96999999974 4209278.1300000008))', 26912),
         'temporary')
 
-insert into LINE (GUID,Project_FK,Project_ID,Shape,StatusDescription)
+insert into dbo.[LINE] (GUID,Project_FK,Project_ID,Shape,StatusDescription)
 values ('00000000-0000-0000-0000-000000000001',
         '00000000-0000-0000-0000-000000000001',
 		-1,
 		 geometry::STGeomFromText('LINESTRING (242463.96999999974 4209278.1300000008, 242464.75999999978 4209260.85)', 26912),
         'temporary')
 
-insert into POLY (GUID,Project_FK,Project_ID,Shape,StatusDescription)
+insert into dbo.[POLY] (GUID,Project_FK,Project_ID,Shape,StatusDescription)
 values ('00000000-0000-0000-0000-000000000001',
         '00000000-0000-0000-0000-000000000001',
 		-1,

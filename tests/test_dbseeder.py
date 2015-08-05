@@ -75,17 +75,21 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_points_etl(self):
         patient = model.Points()
-        type = 1
-        status = 2
-        row = ('shape', 'guid', 'Project_FK', type, type, '   description   ', status, status, 'Project_FK')
+        source_type = 1
+        type = self.get_type_pair_for('Trough', model.Lookup.other_points)
+        type_code = self.get_type_pair_for(type[0], model.Lookup.other_points_code, 0)
+        original_project_status = self.get_type_pair_for('Project', model.Lookup.original_status)[0]
+        current_project_status = self.get_type_pair_for('Current', model.Lookup.new_status)
+
+        row = ('shape', 'guid', 'Project_FK', source_type, source_type, '   description   ', original_project_status, original_project_status, 'Project_FK')
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
-                    ('TypeDescription', 'Trough'),
-                    ('TypeCode', 10),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type_code[1]),
                     ('Description', 'description'),
-                    ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('StatusDescription', current_project_status[1]),
+                    ('StatusCode', current_project_status[0]),
                     ('Project_Id', 1)]
 
         actual = self.patient._etl_row(patient, row)
@@ -94,17 +98,21 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_points_etl(self):
         patient = model.Points(final=True)
-        type = 1
-        status = 3
-        row = ('shape', 'guid', 'CompletedProject_FK', type, type, '   description   ', 'CompletedProject_FK')
+        source_type = 2
+        type = self.get_type_pair_for('Water control structure', model.Lookup.other_points)
+        type_code = self.get_type_pair_for(type[0], model.Lookup.other_points_code, 0)
+        current_project_status = self.get_type_pair_for('Completed', model.Lookup.new_status)
+        from nose.tools import set_trace
+        set_trace()
+        row = ('shape', 'guid', 'CompletedProject_FK', source_type, source_type, '   description   ', 'CompletedProject_FK')
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
-                    ('TypeDescription', 'Trough'),
-                    ('TypeCode', 10),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type_code[1]),
                     ('Description', 'description'),
-                    ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusDescription', current_project_status[1]),
+                    ('StatusCode', current_project_status[0]),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
@@ -113,19 +121,20 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_guzzler_etl(self):
         patient = model.Guzzler()
-        type = 1
+        type = self.get_feature_type_pair('Guzzler')
         action = 5
-        status = 2
-        row = ('shape', 'guid', 'Project_FK', type, action, status, status, 'Project_FK')
+        original_project_status = 2
+        new_project_status = 3
+        row = ('shape', 'guid', 'Project_FK', 1, action, original_project_status, original_project_status, 'Project_FK')
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
-                    ('TypeDescription', 'Guzzler'),
-                    ('TypeCode', 9),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type[0]),
                     ('FeatureSubTypeDescription', 'Big Game'),
                     ('ActionDescription', 'Removal'),
                     ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
 
         actual = self.patient._etl_row(patient, row)
@@ -134,18 +143,18 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_guzzler_etl(self):
         patient = model.Guzzler(final=True)
-        type = 1
+        type = self.get_feature_type_pair('Guzzler')
         action = 5
-        row = ('shape', 'guid', 'CompletedProject_FK', type, action, 'CompletedProject_FK')
+        row = ('shape', 'guid', 'CompletedProject_FK', 1, action, 'CompletedProject_FK')
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
-                    ('TypeDescription', 'Guzzler'),
-                    ('TypeCode', 9),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type[0]),
                     ('FeatureSubTypeDescription', 'Big Game'),
                     ('ActionDescription', 'Removal'),
                     ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusCode', 5),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
@@ -154,18 +163,18 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_fence_etl(self):
         patient = model.Fence()
-        type = (8, 'Fence')
+        type = self.get_feature_type_pair('Fence')
         sub_type = 'Pole top'
         action = 'Reconstruction'
-        status = 2
-
+        original_project_status = 2
+        new_project_status = 3
         row = ('shape',
                'guid',
                'Project_FK',
                sub_type,
                action,
-               status,
-               status,
+               original_project_status,
+               original_project_status,
                'Project_FK')
 
         expected = [('SHAPE@', 'shape'),
@@ -176,8 +185,35 @@ class TestDbSeeder(unittest.TestCase):
                     ('FeatureSubTypeDescription', sub_type),
                     ('ActionDescription', action),
                     ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
+
+        actual = self.patient._etl_row(patient, row)
+
+        self.assertEqual(actual, expected)
+
+    def test_real_fence(self):
+        patient = model.Fence()
+
+        row = (495,  #: shape
+               '1E383419-8A37-4454-98EA-2E23E2DD6D30',  #: guid
+               'Project_FK',  #: pfk
+               2,  #: fence type
+               3,  #: fence action
+               2,  #: status
+               2,  #: status
+               'Project_FK')  #: pfk
+        expected = ([
+                    ('SHAPE@', 495),  #: shape
+                    ('GUID', '1E383419-8A37-4454-98EA-2E23E2DD6D30'),  #: guid
+                    ('Project_FK', 'Project_FK'),  #: pfk
+                    ('TypeDescription', 'Fence'),
+                    ('TypeCode', 10),
+                    ('FeatureSubTypeDescription', 'Buck pole'),
+                    ('ActionDescription', 'Construction'),
+                    ('StatusDescription', 'Current'),
+                    ('StatusCode', 3),
+                    ('Project_Id', 1)])
 
         actual = self.patient._etl_row(patient, row)
 
@@ -185,10 +221,9 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_fence_etl(self):
         patient = model.Fence(final=True)
-        type = (8, 'Fence')
+        type = self.get_feature_type_pair('Fence')
         sub_type = 'Pole top'
         action = 'Reconstruction'
-        status = 3
 
         row = ('shape',
                'guid',
@@ -205,7 +240,7 @@ class TestDbSeeder(unittest.TestCase):
                     ('FeatureSubTypeDescription', sub_type),
                     ('ActionDescription', action),
                     ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusCode', 5),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
@@ -214,18 +249,19 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_pipeline_etl(self):
         patient = model.Pipeline()
-        type = (7, 'Pipeline')
+        type = self.get_feature_type_pair('Pipeline')
         sub_type = 'Above surface'
         action = 'Reconstruction'
-        status = 2
+        original_project_status = 2
+        new_project_status = 3
 
         row = ('shape',
                'guid',
                'Project_FK',
                sub_type,
                action,
-               status,
-               status,
+               original_project_status,
+               original_project_status,
                'Project_FK')
 
         expected = [('SHAPE@', 'shape'),
@@ -236,7 +272,7 @@ class TestDbSeeder(unittest.TestCase):
                     ('FeatureSubTypeDescription', sub_type),
                     ('ActionDescription', action),
                     ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
 
         actual = self.patient._etl_row(patient, row)
@@ -245,10 +281,9 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_pipeline_etl(self):
         patient = model.Pipeline(final=True)
-        type = (7, 'Pipeline')
+        type = self.get_feature_type_pair('Pipeline')
         sub_type = 'Above surface'
         action = 'Reconstruction'
-        status = 3
 
         row = ('shape',
                'guid',
@@ -265,7 +300,7 @@ class TestDbSeeder(unittest.TestCase):
                     ('FeatureSubTypeDescription', sub_type),
                     ('ActionDescription', action),
                     ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusCode', 5),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
@@ -274,16 +309,17 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_dam_etl(self):
         patient = model.Dam()
-        type = (6, 'Dam')
+        type = self.get_feature_type_pair('Dam')
         action = 'Reconstruction'
-        status = 2
+        original_project_status = 2
+        current_project_status = 3
 
         row = ('shape',
                'guid',
                'Project_FK',
                action,
-               status,
-               status,
+               original_project_status,
+               original_project_status,
                'Project_FK')
 
         expected = [('SHAPE@', 'poly_to_line'),
@@ -293,7 +329,7 @@ class TestDbSeeder(unittest.TestCase):
                     ('TypeCode', type[0]),
                     ('ActionDescription', action),
                     ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('StatusCode', current_project_status),
                     ('Project_Id', 1)]
 
         self.patient.polygon_to_line = Mock(return_value='poly_to_line')
@@ -304,9 +340,8 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_dam_etl(self):
         patient = model.Dam(final=True)
-        type = (6, 'Dam')
+        type = self.get_feature_type_pair('Dam')
         action = 'Reconstruction'
-        status = (3, 'Completed')
         self.patient.polygon_to_line = Mock(return_value='poly_to_line')
 
         row = ('shape',
@@ -322,7 +357,7 @@ class TestDbSeeder(unittest.TestCase):
                     ('TypeCode', type[0]),
                     ('ActionDescription', action),
                     ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusCode', 5),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
@@ -332,14 +367,15 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_affectedarea_etl(self):
         patient = model.AffectedArea()
-        type = (5, 'Affected Area')
-        status = 2
+        type = self.get_feature_type_pair('Affected Area')
+        original_project_status = 2
+        current_project_status = 3
 
         row = ('shape',
                'guid',
                'Project_FK',
-               status,
-               status,
+               original_project_status,
+               original_project_status,
                'Project_FK')
 
         expected = [('SHAPE@', 'shape'),
@@ -348,7 +384,7 @@ class TestDbSeeder(unittest.TestCase):
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
                     ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('StatusCode', current_project_status),
                     ('Project_Id', 1)]
 
         actual = self.patient._etl_row(patient, row)
@@ -357,7 +393,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_affectedarea_etl(self):
         patient = model.AffectedArea(final=True)
-        type = (5, 'Affected Area')
+        type = self.get_feature_type_pair('Affected Area')
 
         row = ('shape',
                'guid',
@@ -370,7 +406,7 @@ class TestDbSeeder(unittest.TestCase):
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
                     ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusCode', 5),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
@@ -379,14 +415,15 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_easement_etl(self):
         patient = model.EasementAquisition()
-        type = (3, 'Easement/Acquisition')
-        status = 2
+        type = self.get_feature_type_pair('Easement/Acquisition')
+        original_project_status = 2
+        current_project_status = 3
 
         row = ('shape',
                'guid',
                'Project_FK',
-               status,
-               status,
+               original_project_status,
+               original_project_status,
                'Project_FK')
 
         expected = [('SHAPE@', 'shape'),
@@ -395,7 +432,7 @@ class TestDbSeeder(unittest.TestCase):
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
                     ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('StatusCode', current_project_status),
                     ('Project_Id', 1)]
 
         actual = self.patient._etl_row(patient, row)
@@ -404,7 +441,8 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_easement_etl(self):
         patient = model.EasementAquisition(final=True)
-        type = (3, 'Easement/Acquisition')
+        type = self.get_feature_type_pair('Easement/Acquisition')
+        current_project_status = self.get_type_pair_for('Completed', model.Lookup.new_status)
 
         row = ('shape',
                'guid',
@@ -416,8 +454,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusDescription', current_project_status[1]),
+                    ('StatusCode', current_project_status[0]),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
@@ -426,26 +464,26 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_aquatic_etl(self):
         patient = model.AquaticTreatmentArea()
-        type = 'Aquatic/Riparian'
+        type = self.get_feature_type_pair('Aquatic/Riparian Treatment Area')
         source_type_code = 2
-        type_code = 1
-        status = 2
+        original_project_status = self.get_type_pair_for('Project', model.Lookup.original_status)[0]
+        current_project_status = self.get_type_pair_for('Current', model.Lookup.new_status)
 
         row = ('shape',
                'guid',
                'Project_FK',
                source_type_code,
-               status,
-               status,
+               original_project_status,
+               original_project_status,
                'Project_FK')
 
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
-                    ('TypeDescription', type),
-                    ('TypeCode', type_code),
-                    ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type[0]),
+                    ('StatusDescription', current_project_status[1]),
+                    ('StatusCode', current_project_status[0]),
                     ('Project_Id', 1)]
 
         actual = self.patient._etl_row(patient, row)
@@ -454,10 +492,8 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_aquatic_etl(self):
         patient = model.AquaticTreatmentArea(final=True)
-        type = 'Aquatic/Riparian'
+        type = self.get_feature_type_pair('Aquatic/Riparian Treatment Area')
         source_type_code = 2
-        type_code = 1
-        status = 3
 
         row = ('shape',
                'guid',
@@ -468,10 +504,10 @@ class TestDbSeeder(unittest.TestCase):
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
-                    ('TypeDescription', type),
-                    ('TypeCode', type_code),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type[0]),
                     ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusCode', 5),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
@@ -480,24 +516,24 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_research_etl(self):
         patient = model.Research()
-        type = 'Research'
-        type_code = 5
-        status = 2
+        type = self.get_feature_type_pair('Research')
+        original_project_status = 2
+        new_project_status = 3
 
         row = ('shape',
                'guid',
                'Project_FK',
-               status,
-               status,
+               original_project_status,
+               original_project_status,
                'Project_FK')
 
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
-                    ('TypeDescription', type),
-                    ('TypeCode', type_code),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type[0]),
                     ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
 
         actual = self.patient._etl_row(patient, row)
@@ -506,9 +542,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_research_etl(self):
         patient = model.Research(final=True)
-        type = 'Research'
-        type_code = 5
-        status = 3
+        type = self.get_feature_type_pair('Research')
 
         row = ('shape',
                'guid',
@@ -518,10 +552,10 @@ class TestDbSeeder(unittest.TestCase):
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
-                    ('TypeDescription', type),
-                    ('TypeCode', type_code),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type[0]),
                     ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusCode', 5),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
@@ -530,9 +564,9 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_fishpassage_etl(self):
         patient = model.FishPassage()
-        type = 'Fish Passage Structure'
-        type_code = 2
-        status = 2
+        type = self.get_feature_type_pair('Fish passage structure')
+        original_project_status = 2
+        new_project_status = 3
 
         class TestDummy(object):
             pass
@@ -543,17 +577,17 @@ class TestDbSeeder(unittest.TestCase):
         row = (poly,
                'guid',
                'Project_FK',
-               status,
-               status,
+               original_project_status,
+               original_project_status,
                'Project_FK')
 
         expected = [('SHAPE@', 'centroid'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
-                    ('TypeDescription', type),
-                    ('TypeCode', type_code),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type[0]),
                     ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
 
         actual = self.patient._etl_row(patient, row)
@@ -562,9 +596,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_fishpassage_etl(self):
         patient = model.FishPassage(final=True)
-        type = 'Fish Passage Structure'
-        type_code = 2
-        status = 3
+        type = self.get_feature_type_pair('Fish passage structure')
 
         class TestDummy(object):
             pass
@@ -580,10 +612,10 @@ class TestDbSeeder(unittest.TestCase):
         expected = [('SHAPE@', 'centroid'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
-                    ('TypeDescription', type),
-                    ('TypeCode', type_code),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type[0]),
                     ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusCode', 5),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
@@ -592,26 +624,25 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_terrestrial_etl(self):
         patient = model.TerrestrialTreatmentArea()
-        type = 'Terrestrial'
+        type = self.get_feature_type_pair('Terrestrial Treatment Area')
         source_type_code = 1
-        type_code = 0
-        status = 2
+        project_status = 2
 
         row = ('shape',
                'guid',
                'Project_FK',
                source_type_code,
-               status,
-               status,
+               project_status,
+               project_status,
                'Project_FK')
 
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
-                    ('TypeDescription', type),
-                    ('TypeCode', type_code),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type[0]),
                     ('StatusDescription', 'Current'),
-                    ('StatusCode', 2),
+                    ('StatusCode', 3),
                     ('Project_Id', 1)]
 
         actual = self.patient._etl_row(patient, row)
@@ -620,10 +651,8 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_terrestrial_etl(self):
         patient = model.TerrestrialTreatmentArea(final=True)
-        type = 'Terrestrial'
-        type_code = 0
+        type = self.get_feature_type_pair('Terrestrial Treatment Area')
         source_type_code = 1
-        status = 3
 
         row = ('shape',
                'guid',
@@ -634,15 +663,25 @@ class TestDbSeeder(unittest.TestCase):
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
-                    ('TypeDescription', type),
-                    ('TypeCode', type_code),
+                    ('TypeDescription', type[1]),
+                    ('TypeCode', type[0]),
                     ('StatusDescription', 'Completed'),
-                    ('StatusCode', 4),
+                    ('StatusCode', 5),
                     ('Project_Id', 2)]
 
         actual = self.patient._etl_row(patient, row)
 
         self.assertEqual(actual, expected)
+
+    def get_feature_type_pair(self, type):
+        for pair in model.Lookup.feature_type.iteritems():
+            if pair[1] == type:
+                return pair
+
+    def get_type_pair_for(self, type, lookup, index=1):
+        for pair in lookup.iteritems():
+            if pair[index] == type:
+                return pair
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,6 @@
-DROP TABLE [Wri].[dbo].POLY
+DROP TABLE [dbo].POLY
 
-CREATE TABLE [Wri].[dbo].[POLY](
+CREATE TABLE [dbo].[POLY](
 	[FeatureID] [bigint] IDENTITY(1,1) NOT NULL,
 	[TypeDescription] [nvarchar](255) NULL,
 	[TypeCode] [int] NULL,
@@ -17,9 +17,9 @@ CREATE TABLE [Wri].[dbo].[POLY](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
-DROP TABLE [Wri].[dbo].POINT
+DROP TABLE [dbo].POINT
 
-CREATE TABLE [Wri].[dbo].[POINT](
+CREATE TABLE [dbo].[POINT](
 	[FeatureID] [bigint] IDENTITY(1,1) NOT NULL,
 	[TypeDescription] [nvarchar](255) NULL,
 	[TypeCode] [int] NULL,
@@ -40,9 +40,9 @@ CREATE TABLE [Wri].[dbo].[POINT](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
-DROP TABLE [Wri].[dbo].LINE
+DROP TABLE [dbo].LINE
 
-CREATE TABLE [Wri].[dbo].[LINE](
+CREATE TABLE [dbo].[LINE](
 	[FeatureID] [bigint] IDENTITY(1,1) NOT NULL,
 	[TypeDescription] [nvarchar](255) NULL,
 	[TypeCode] [int] NULL,

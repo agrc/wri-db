@@ -1,11 +1,11 @@
-delete from [WRI].[dbo].[LINE] where StatusDescription != 'Complete' and project_fk in (
-	select project_fk from [WRI].[dbo].[LINE] where StatusDescription = 'Complete'
+delete from [dbo].[LINE] where StatusDescription != 'Completed' and project_fk in (
+	select project_fk from [dbo].[LINE] where StatusDescription = 'Completed'
 )
 
-delete from [WRI].[dbo].[POLY] where StatusDescription != 'Complete' and project_fk in (
-	select project_fk from [WRI].[dbo].[POLY] where StatusDescription = 'Complete'
+delete from [dbo].[POLY] where StatusDescription != 'Completed' and project_fk in (
+	select project_fk from [dbo].[POLY] where StatusDescription = 'Completed'
 )
 
-delete from [WRI].[dbo].[POINT] where StatusDescription != 'Complete' and project_fk in (
-	select project_fk from [WRI].[dbo].[POINT] where StatusDescription = 'Complete'
+delete from [dbo].[POINT] where StatusDescription != 'Completed' and project_fk in (
+	select project_fk from [dbo].[POINT] where StatusDescription = 'Completed'
 )

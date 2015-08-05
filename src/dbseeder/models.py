@@ -200,7 +200,7 @@ class Points(Table):
             '*StatusCode': {
                 'type': 'string',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 7
             },
             '!CompletedProject_FK': {
@@ -212,7 +212,7 @@ class Points(Table):
         }
 
         self.name = self.format_source_table('{1}Points as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}POINTS', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}POINTS', [self.owner, final])
         self.destination = '{}.POINT'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
@@ -251,7 +251,7 @@ class Guzzler(Table):
             '*TypeCode': {
                 'type': 'string',
                 'map': 'TypeCode',
-                'value': 9,
+                'value': 5,
                 'order': 4
             },
             'GuzzlerType': {
@@ -311,7 +311,7 @@ class Guzzler(Table):
             '*TypeCode': {
                 'type': 'string',
                 'map': 'TypeCode',
-                'value': 9,
+                'value': 5,
                 'order': 4
             },
             'GuzzlerType': {
@@ -335,7 +335,7 @@ class Guzzler(Table):
             '*StatusCode': {
                 'type': 'string',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 8
             },
             '!CompletedProject_FK': {
@@ -347,7 +347,7 @@ class Guzzler(Table):
         }
 
         self.name = self.format_source_table('{1}Guzzler as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}GUZZLER', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}GUZZLER', [self.owner, final])
         self.destination = '{}.POINT'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
@@ -386,7 +386,7 @@ class Fence(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 8,
+                'value': 10,
                 'order': 4
             },
             'FenceType': {
@@ -446,7 +446,7 @@ class Fence(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 8,
+                'value': 10,
                 'order': 4
             },
             'FenceType': {
@@ -470,7 +470,7 @@ class Fence(Table):
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 8
             },
             '!CompletedProject_FK': {
@@ -482,7 +482,7 @@ class Fence(Table):
         }
 
         self.name = self.format_source_table('{1}Fence as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}FENCE', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}FENCE', [self.owner, final])
         self.destination = '{}.LINE'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
@@ -521,7 +521,7 @@ class Pipeline(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 7,
+                'value': 11,
                 'order': 4
             },
             'PipelineType': {
@@ -581,7 +581,7 @@ class Pipeline(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 7,
+                'value': 11,
                 'order': 4
             },
             'PipelineType': {
@@ -605,7 +605,7 @@ class Pipeline(Table):
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 8
             },
             '!CompletedProject_FK': {
@@ -617,7 +617,7 @@ class Pipeline(Table):
         }
 
         self.name = self.format_source_table('{1}Pipeline as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}PIPELINE', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}PIPELINE', [self.owner, final])
         self.destination = '{}.LINE'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
@@ -659,7 +659,7 @@ class Dam(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 6,
+                'value': 12,
                 'order': 4
             },
             'DamAction': {
@@ -716,7 +716,7 @@ class Dam(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 6,
+                'value': 12,
                 'order': 4
             },
             'DamAction': {
@@ -734,7 +734,7 @@ class Dam(Table):
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 7
             },
             '!CompletedProject_FK': {
@@ -746,7 +746,7 @@ class Dam(Table):
         }
 
         self.name = self.format_source_table('{1}Dam as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}DAM', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}DAM', [self.owner, final])
         self.destination = '{}.LINE'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
@@ -785,7 +785,7 @@ class AffectedArea(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 5,
+                'value': 3,
                 'order': 4
             },
             'Status': {
@@ -833,7 +833,7 @@ class AffectedArea(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 5,
+                'value': 3,
                 'order': 4
             },
             '*Status': {
@@ -845,7 +845,7 @@ class AffectedArea(Table):
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -857,7 +857,7 @@ class AffectedArea(Table):
         }
 
         self.name = self.format_source_table('{1}Affected Areas as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}AFFECTEDAREA', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}AFFECTEDAREA', [self.owner, final])
         self.destination = '{}.POLY'.format('dbo')
         self.schema = self.set_schema(final,
                                       [
@@ -896,7 +896,7 @@ class AquaticTreatmentArea(Table):
             '*Type': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 1,
+                'value': 2,
                 'order': 4
             },
             'Status': {
@@ -944,7 +944,7 @@ class AquaticTreatmentArea(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 1,
+                'value': 2,
                 'order': 4
             },
             '*Status': {
@@ -956,7 +956,7 @@ class AquaticTreatmentArea(Table):
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -968,10 +968,10 @@ class AquaticTreatmentArea(Table):
         }
 
         self.name = self.format_source_table('{1}Aquatic Treatment Areas as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}TREATMENTAREA', [self.owner, final])
         #: get all aquatic treatments without the fish passage and research action
         self.where_clause = self.format_source_table('Type = 2 and guid not in (select distinct(TreatmentArea_FK) ' +
-                                                     'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION ' +
+                                                     'from {0}.WRI{1}AQUATICRIPARIANACTION ' +
                                                      'where ActionCode in (1,6))', [self.owner, final])
         self.destination = '{}.POLY'.format('dbo')
         self.schema = self.set_schema(final,
@@ -1011,7 +1011,7 @@ class Research(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 5,
+                'value': 13,
                 'order': 4
             },
             'Status': {
@@ -1059,7 +1059,7 @@ class Research(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 5,
+                'value': 13,
                 'order': 4
             },
             '*Status': {
@@ -1071,7 +1071,7 @@ class Research(Table):
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -1083,10 +1083,10 @@ class Research(Table):
         }
 
         self.name = self.format_source_table('{1}Research as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}TREATMENTAREA', [self.owner, final])
         #: get all aquatic treatments with all the research actions
         self.where_clause = self.format_source_table('Type = 2 and guid in (select distinct(TreatmentArea_FK) ' +
-                                                     'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION where ActionCode = 6)',
+                                                     'from {0}.WRI{1}AQUATICRIPARIANACTION where ActionCode = 6)',
                                                      [self.owner, final])
         self.destination = '{}.POLY'.format('dbo')
         self.schema = self.set_schema(final,
@@ -1126,7 +1126,7 @@ class TerrestrialTreatmentArea(Table):
             '*Type': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 0,
+                'value': 1,
                 'order': 4
             },
             'Status': {
@@ -1174,7 +1174,7 @@ class TerrestrialTreatmentArea(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 0,
+                'value': 1,
                 'order': 4
             },
             '*Status': {
@@ -1186,7 +1186,7 @@ class TerrestrialTreatmentArea(Table):
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -1198,10 +1198,10 @@ class TerrestrialTreatmentArea(Table):
         }
 
         self.name = self.format_source_table('{1}Terrestrial Treatment Areas as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}TREATMENTAREA', [self.owner, final])
         #: get all Terrestrial treatments without the conservation and fee title
         self.where_clause = self.format_source_table('Type = 1 and guid not in (select distinct(TreatmentArea_FK) ' +
-                                                     'from WRI.{0}.WRI{1}TerrestrialACTION where ' +
+                                                     'from {0}.WRI{1}TerrestrialACTION where ' +
                                                      'ActionCode in (24,25))', [self.owner, final])
         self.destination = '{}.POLY'.format('dbo')
         self.schema = self.set_schema(final,
@@ -1238,13 +1238,13 @@ class FishPassage(Table):
             '*Type': {
                 'type': 'string',
                 'map': 'TypeDescription',
-                'value': 'Fish Passage Structure',
+                'value': 'Fish passage structure',
                 'order': 3
             },
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 2,
+                'value': 9,
                 'order': 4
             },
             'Status': {
@@ -1289,13 +1289,13 @@ class FishPassage(Table):
             '*Type': {
                 'type': 'string',
                 'map': 'TypeDescription',
-                'value': 'Fish Passage Structure',
+                'value': 'Fish passage structure',
                 'order': 3
             },
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 2,
+                'value': 9,
                 'order': 4
             },
             '*Status': {
@@ -1307,7 +1307,7 @@ class FishPassage(Table):
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -1318,10 +1318,10 @@ class FishPassage(Table):
             }
         }
         self.name = self.format_source_table('{1}Fish Passage Structure as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}TREATMENTAREA', [self.owner, final])
         #: get all aquatic treatments with the fish passage action
         self.where_clause = self.format_source_table('Type = 2 and guid in (select distinct(TreatmentArea_FK) ' +
-                                                     'from WRI.{0}.WRI{1}AQUATICRIPARIANACTION where ActionCode = 1)',
+                                                     'from {0}.WRI{1}AQUATICRIPARIANACTION where ActionCode = 1)',
                                                      [self.owner, final])
         self.destination = '{}.POINT'.format('dbo')
         self.schema = self.set_schema(final,
@@ -1361,7 +1361,7 @@ class EasementAquisition(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 3,
+                'value': 4,
                 'order': 4
             },
             'Status': {
@@ -1409,7 +1409,7 @@ class EasementAquisition(Table):
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 3,
+                'value': 4,
                 'order': 4
             },
             '*Status': {
@@ -1421,7 +1421,7 @@ class EasementAquisition(Table):
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
-                'value': 4,
+                'value': 5,
                 'order': 6
             },
             '!CompletedProject_FK': {
@@ -1433,10 +1433,10 @@ class EasementAquisition(Table):
         }
 
         self.name = self.format_source_table('{1}Easement/Aquisition as {0}', [self.owner, final])
-        self.source = self.format_source_table('WRI.{}.WRI{}TREATMENTAREA', [self.owner, final])
+        self.source = self.format_source_table('{}.WRI{}TREATMENTAREA', [self.owner, final])
         #: get all terrestrial treatments with the easement and fee actions
         self.where_clause = self.format_source_table('Type = 1 and guid in (select distinct(TreatmentArea_FK) ' +
-                                                     'from WRI.{0}.WRI{1}TerrestrialACTION where ' +
+                                                     'from {0}.WRI{1}TerrestrialACTION where ' +
                                                      'ActionCode in (24,25))',
                                                      [self.owner, final])
         self.destination = '{}.POLY'.format('dbo')
@@ -1453,52 +1453,69 @@ class Lookup(object):
         super(Lookup, self).__init__()
 
     feature_type = {
-        0: 'Terrestrial',
-        1: 'Aquatic/Riparian',
-        2: 'Fish Passage Structure',
-        3: 'Easement/Acquisition',
-        4: 'Affected Area',
-        5: 'Research',
-        6: 'Dam',
-        7: 'Pipeline',
-        8: 'Fence',
-        9: 'Guzzler',
-        10: 'Trough',
-        11: 'Water Control Structure',
-        12: 'Other'
+        1: 'Terrestrial Treatment Area',
+        2: 'Aquatic/Riparian Treatment Area',
+        3: 'Affected Area',
+        4: 'Easement/Acquisition',
+        5: 'Guzzler',
+        6: 'Trough',
+        7: 'Water control structure',
+        8: 'Other point feature',
+        9: 'Fish passage structure',
+        10: 'Fence',
+        11: 'Pipeline',
+        12: 'Dam',
+        13: 'Research',
     }
 
     treatment_area = {
-        1: 'Terrestrial',
-        2: 'Aquatic/Riparian'
+        1: 'Terrestrial Treatment Area',
+        2: 'Aquatic/Riparian Treatment Area'
     }
 
     status = {
         1: 'Proposed',
         2: 'Current',
-        3: 'Pending Completed',
-        4: 'Completed',
+        3: 'Completed',
+        4: 'Cancelled',
         5: 'Cancelled',
     }
 
+    new_status = {
+        1: 'Draft',
+        2: 'Proposed',
+        3: 'Current',
+        4: 'Pending Completed',
+        5: 'Completed',
+        6: 'Cancelled'
+    }
+
+    original_status = {
+        1: 'Proposal',
+        2: 'Project',
+        3: 'Complete',
+        4: 'Not Funded',
+        5: 'Cancelled'
+    }
+
     status_code = {
-        1: 1,
-        2: 2,
-        3: 4,
-        4: 5,
-        5: 5,
+        1: 2,
+        2: 3,
+        3: 5,
+        4: 6,
+        5: 6,
     }
 
     other_points = {
         1: 'Trough',
-        2: 'Water Control Structure',
-        3: 'Other'
+        2: 'Water control structure',
+        3: 'Other point feature'
     }
 
     other_points_code = {
-        1: 10,
-        2: 11,
-        3: 12
+        1: 6,
+        2: 7,
+        3: 8
     }
 
     structure_action = {
