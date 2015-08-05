@@ -23,28 +23,28 @@ class Seeder(object):
         self.Lookup = Lookup()
 
         self.table_models = [
-            # models.Points(),
-            # models.Points(final=True),
-            # models.Guzzler(),
-            # models.Guzzler(final=True),
-            # models.Fence(),
-            # models.Fence(final=True),
-            # models.Pipeline(),
-            # models.Pipeline(final=True),
-            # models.Dam(),
-            # models.Dam(final=True),
-            # models.AffectedArea(),
-            # models.AffectedArea(final=True),
-            # models.Research(),
-            # models.Research(final=True),
-            # models.FishPassage(),
-            # models.FishPassage(final=True),
-            # models.EasementAquisition(),
-            # models.EasementAquisition(final=True),
-            # models.AquaticTreatmentArea(),
-            # models.AquaticTreatmentArea(final=True),
-            # models.TerrestrialTreatmentArea(),
-            # models.TerrestrialTreatmentArea(final=True),
+            models.Points(),
+            models.Points(final=True),
+            models.Guzzler(),
+            models.Guzzler(final=True),
+            models.Fence(),
+            models.Fence(final=True),
+            models.Pipeline(),
+            models.Pipeline(final=True),
+            models.Dam(),
+            models.Dam(final=True),
+            models.AffectedArea(),
+            models.AffectedArea(final=True),
+            models.Research(),
+            models.Research(final=True),
+            models.FishPassage(),
+            models.FishPassage(final=True),
+            models.EasementAquisition(),
+            models.EasementAquisition(final=True),
+            models.AquaticTreatmentArea(),
+            models.AquaticTreatmentArea(final=True),
+            models.TerrestrialTreatmentArea(),
+            models.TerrestrialTreatmentArea(final=True),
         ]
 
         self.scratch_line = '%scratchGDB%\\wri_dbseeder_line'
@@ -86,14 +86,14 @@ class Seeder(object):
         total_start = timeit.default_timer()
 
         print('Truncating spatial table features')
-        # cursor = arcpy.ArcSDESQLExecute(self.locations['destination'])
-        # try:
-        #     cursor.execute(self.truncate_sql)
-        # finally:
-        #     del cursor
-        #
-        # print('Seeding table geometry types')
-        # self.set_geometry_types(arcpy, self.locations['destination'])
+        cursor = arcpy.ArcSDESQLExecute(self.locations['destination'])
+        try:
+            cursor.execute(self.truncate_sql)
+        finally:
+            del cursor
+
+        print('Seeding table geometry types')
+        self.set_geometry_types(arcpy, self.locations['destination'])
 
         print('Building guid to project number lookup')
         models.Lookup.project_id = self.build_guid_ref_table(arcpy, self.locations)
