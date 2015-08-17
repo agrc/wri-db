@@ -84,6 +84,7 @@ class Seeder(object):
         import arcpy
 
         total_start = timeit.default_timer()
+        self.web_mercator = arcpy.SpatialReference(3857)
 
         print('Truncating spatial table features')
         cursor = arcpy.ArcSDESQLExecute(self.locations['destination'])
@@ -114,7 +115,8 @@ class Seeder(object):
             arcpy.env.workspace = self.locations['source']
             with arcpy.da.SearchCursor(in_table=source_table,
                                        field_names=source_fields,
-                                       where_clause=model.where_clause) as cursor:
+                                       where_clause=model.where_clause,
+                                       spatial_reference=self.web_mercator) as cursor:
                 #: etl the rows
                 print('- etling results')
                 rows = map(partial(self._etl_row, model), cursor)
@@ -227,7 +229,8 @@ class Seeder(object):
         for table in tables.iteritems():
             with arcpy.da.SearchCursor(in_table=table[0],
                                        where_clause=where_clause,
-                                       field_names=table[1]) as cursor:
+                                       field_names=table[1],
+                                       spatial_reference=self.web_mercator) as cursor:
                 for row in cursor:
                     update_point_for_project(row)
 
@@ -236,16 +239,18 @@ class Seeder(object):
         where_clause = 'Project_id in ({})'.format(','.join(project_id_strings))
 
         #: might need this to seed the project table for use in arcmap
-        # cursor = arcpy.ArcSDESQLExecute(locations['destination'])
-        # try:
-        #     cursor.execute("update PROJECT set
-        #                   Centroid=geometry::STGeomFromText('POINT (242463.96999999974 4209278.1300000008)', 26912) where project_id = 1663",
-        # finally:
-        #     del cursor
+        cursor = arcpy.ArcSDESQLExecute(locations['destination'])
+        try:
+            cursor.execute("update PROJECT set Centroid=geometry::STGeomFromText('POINT (40 -110)', 3857) where project_id = 1663")
+        except:
+            pass
+        finally:
+            del cursor
 
         with arcpy.da.UpdateCursor(in_table='dbo.Project',
                                    where_clause=where_clause,
-                                   field_names=['Project_ID', 'Centroid']) as project_cursor:
+                                   field_names=['Project_ID', 'Centroid'],
+                                   spatial_reference=self.web_mercator) as project_cursor:
             for row in project_cursor:
                 key = row[0]
 
