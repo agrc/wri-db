@@ -1005,13 +1005,13 @@ class Research(Table):
             '*Type': {
                 'type': 'string',
                 'map': 'TypeDescription',
-                'value': 'Research',
+                'value': 'Affected Area',
                 'order': 3
             },
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 13,
+                'value': 3,
                 'order': 4
             },
             'Status': {
@@ -1053,13 +1053,13 @@ class Research(Table):
             '*Type': {
                 'type': 'string',
                 'map': 'TypeDescription',
-                'value': 'Research',
+                'value': 'Affected Area',
                 'order': 3
             },
             '*TypeCode': {
                 'type': 'int',
                 'map': 'TypeCode',
-                'value': 13,
+                'value': 3,
                 'order': 4
             },
             '*Status': {

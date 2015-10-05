@@ -102,8 +102,6 @@ class TestDbSeeder(unittest.TestCase):
         type = self.get_type_pair_for('Water control structure', model.Lookup.other_points)
         type_code = self.get_type_pair_for(type[0], model.Lookup.other_points_code, 0)
         current_project_status = self.get_type_pair_for('Completed', model.Lookup.new_status)
-        from nose.tools import set_trace
-        set_trace()
         row = ('shape', 'guid', 'CompletedProject_FK', source_type, source_type, '   description   ', 'CompletedProject_FK')
         expected = [('SHAPE@', 'shape'),
                     ('GUID', 'guid'),
@@ -516,7 +514,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_research_etl(self):
         patient = model.Research()
-        type = self.get_feature_type_pair('Research')
+        type = self.get_feature_type_pair('Affected Area')
         original_project_status = 2
         new_project_status = 3
 
@@ -542,7 +540,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_research_etl(self):
         patient = model.Research(final=True)
-        type = self.get_feature_type_pair('Research')
+        type = self.get_feature_type_pair('Affected Area')
 
         row = ('shape',
                'guid',
