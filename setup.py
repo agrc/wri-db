@@ -40,7 +40,7 @@ class Tox(TestCommand):
 
 setup(
     name="wri-dbseeder",
-    version="2.0.0",
+    version="3.0.0",
     license="MIT",
     description="ETL WRI Data",
     long_description="",
@@ -53,11 +53,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     classifiers=[
-        # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        # "Development Status :: 1 - Planning",
-        # "Development Status :: 3 - Alpha",
-        "Development Status :: 4 - Beta",
-        # "Development Status :: 5 - Production/Stable",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: Unix",
@@ -67,18 +63,6 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Topic :: Utilities",
     ],
-    keywords=[
-        # eg: "keyword1", "keyword2", "keyword3",
-    ],
-    install_requires=[
-
-    ],
-    dependency_links=[
-
-    ],
-    extras_require={
-        # eg: 'rst': ["docutils>=0.11"],
-    },
     entry_points={
         "console_scripts": [
             "dbseeder = dbseeder.__main__:main"
