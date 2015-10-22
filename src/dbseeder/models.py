@@ -107,7 +107,10 @@ class Points(Table):
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
-                'order': 0
+                'order': 0,
+                'etl': {
+                    'method': 'point_to_multipoint'
+                }
             },
             'GUID': {
                 'type': 'unique',
@@ -161,7 +164,10 @@ class Points(Table):
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
-                'order': 0
+                'order': 0,
+                'etl': {
+                    'method': 'point_to_multipoint'
+                }
             },
             'GUID': {
                 'type': 'unique',
@@ -230,7 +236,10 @@ class Guzzler(Table):
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
-                'order': 0
+                'order': 0,
+                'etl': {
+                    'method': 'point_to_multipoint'
+                }
             },
             'GUID': {
                 'type': 'unique',
@@ -290,7 +299,10 @@ class Guzzler(Table):
             'SHAPE@': {
                 'type': 'shape',
                 'map': 'SHAPE@',
-                'order': 0
+                'order': 0,
+                'etl': {
+                    'method': 'point_to_multipoint'
+                }
             },
             'GUID': {
                 'type': 'unique',
@@ -1222,7 +1234,7 @@ class FishPassage(Table):
                 'map': 'SHAPE@',
                 'order': 0,
                 'etl': {
-                    'method': 'centroid'
+                    'method': ['centroid', 'point_to_multipoint']
                 }
             },
             'GUID': {
@@ -1273,7 +1285,7 @@ class FishPassage(Table):
                 'map': 'SHAPE@',
                 'order': 0,
                 'etl': {
-                    'method': 'centroid'
+                    'method': ['centroid', 'point_to_multipoint']
                 }
             },
             'GUID': {

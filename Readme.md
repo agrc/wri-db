@@ -22,15 +22,10 @@ A db seeder etl tool for wri data.
 ### Usage
 from the **/src** directory
 
-`python -m dbseeder seed "connections\WRI on (production).sde" "connections\WRI_Spatial on (local).sde"`
-
-`python -m dbseeder seed "connections\WRI_Source on (local).sde" "connections\WRI on (local).sde"`
+`python -m dbseeder seed "connections\WRI on PROD.sde" "connections\WRI on (local).sde" "http://localhost/wri/"`
 
 ### Tests
 from the **parent** project directory
 `tox`
 
 ### Problems
-`expecting string data` means the lookup value was not in the models table. Change batch size to 2 and look for a number where there should be a value. Add the number: None
-
-`string or binary data to be truncated` - run `python -m dbseeder path/to/csv's --length` and adjust sql schema

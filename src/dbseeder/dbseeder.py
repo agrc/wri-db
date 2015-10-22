@@ -10,6 +10,7 @@ the dbseeder module
 import models
 import re
 import timeit
+import requests
 from functools import partial
 from models import Lookup
 from os.path import join, dirname, isfile
@@ -17,10 +18,12 @@ from os.path import join, dirname, isfile
 
 class Seeder(object):
 
-    def __init__(self, locations):
+    def __init__(self, locations, where):
         super(Seeder, self).__init__()
 
         self.Lookup = Lookup()
+
+        self.api_url_template = where + 'api/historical/project/{}/create-related-data'
 
         self.table_models = [
             models.Points(),
@@ -149,8 +152,8 @@ class Seeder(object):
         print('Removing Duplicate Features')
         self.dedup_features(arcpy, self.locations)
 
-        print('Updating Project Centroids')
-        self.update_project_centroids(arcpy, self.locations)
+        print('Updating Related Tables and Project Centroids')
+        self.update_related_and_centroids(arcpy, self.locations)
 
         total_end = timeit.default_timer()
 
@@ -201,65 +204,6 @@ class Seeder(object):
             cursor.execute(self.dedupe_sql)
         finally:
             del cursor
-
-    def update_project_centroids(self, arcpy, locations):
-        #: query projects with features and get the unique project id's
-        #: get the project status and the features to create centroids
-        where_clause = '1=1'
-        fields = ['Project_id', 'SHAPE@TRUECENTROID']
-        project_information = {}
-
-        arcpy.env.workspace = locations['destination']
-
-        def update_point_for_project(row):
-            if row[0] in project_information:
-                new_point = arcpy.Point(row[1][0], row[1][1])
-                project_information[row[0]].add(new_point)
-            else:
-                project_information[row[0]] = arcpy.Array([arcpy.Point(row[1][0], row[1][1])])
-
-        tables = {
-            'dbo.POLY': fields,
-            'dbo.LINE': fields,
-            'dbo.POINT': fields
-        }
-
-        tables['dbo.POINT'][1] = 'SHAPE@XY'
-
-        for table in tables.iteritems():
-            with arcpy.da.SearchCursor(in_table=table[0],
-                                       where_clause=where_clause,
-                                       field_names=table[1],
-                                       spatial_reference=self.web_mercator) as cursor:
-                for row in cursor:
-                    update_point_for_project(row)
-
-        project_id_strings = map(lambda id: str(id), project_information.keys())
-
-        where_clause = 'Project_id in ({})'.format(','.join(project_id_strings))
-
-        #: might need this to seed the project table for use in arcmap
-        cursor = arcpy.ArcSDESQLExecute(locations['destination'])
-        try:
-            cursor.execute("update PROJECT set Centroid=geometry::STGeomFromText('POINT (40 -110)', 3857) where project_id = 1663")
-        except:
-            pass
-        finally:
-            del cursor
-
-        with arcpy.da.UpdateCursor(in_table='dbo.Project',
-                                   where_clause=where_clause,
-                                   field_names=['Project_ID', 'Centroid'],
-                                   spatial_reference=self.web_mercator) as project_cursor:
-            for row in project_cursor:
-                key = row[0]
-
-                points = project_information[key]
-                multipoint = arcpy.Multipoint(points)
-
-                row[1] = multipoint.trueCentroid
-
-                project_cursor.updateRow(row)
 
     def _get_where_clause(self, arcpy, db):
         where_clause = 'Project_FK in ({})'
@@ -334,11 +278,18 @@ class Seeder(object):
                 if 'method' not in etl_info:
                     return item
 
-                if etl_info['method'] == 'centroid':
-                    item = (destination_field, value.centroid)
-                elif etl_info['method'] == 'poly_to_line':
-                    line = self.polygon_to_line(value)
-                    item = (destination_field, line)
+                operations = etl_info['method']
+                if isinstance(operations, basestring):
+                    item = self.handle_etl(operations, value, destination_field)
+                else:
+                    updated = None
+                    for operation in operations:
+                        if updated is None:
+                            updated = self.handle_etl(operation, value, destination_field)
+                        else:
+                            updated = self.handle_etl(operation, updated, destination_field)
+
+                    item = updated
 
             return item
 
@@ -381,3 +332,55 @@ class Seeder(object):
             arcpy.env.workspace = _workspace
 
         return line
+
+    def point_to_multipoint(self, point):
+        import arcpy
+
+        return arcpy.Multipoint(arcpy.Array(point))
+
+    def handle_etl(self, operation, value, destination_field):
+        if operation == 'centroid':
+            item = (destination_field, value.centroid)
+        elif operation == 'poly_to_line':
+            line = self.polygon_to_line(value)
+            item = (destination_field, line)
+        elif operation == 'point_to_multipoint':
+            if isinstance(value, tuple):
+                value = value[1]
+
+            try:
+                value = value.getPart(0)
+            except:
+                pass
+
+            item = (destination_field, self.point_to_multipoint(value))
+
+        return item
+
+    def update_related_and_centroids(self, arcpy, locations):
+        cursor = arcpy.ArcSDESQLExecute(locations['destination'])
+        project_ids = None
+
+        try:
+            project_ids = cursor.execute('select project_id from project')
+        finally:
+            del cursor
+
+        project_ids = [item for iter_ in project_ids for item in iter_]
+        project_ids.sort()
+
+        while project_ids:
+            failed_projects = []
+            for id in project_ids:
+                #: make request to server
+                url = self.api_url_template.format(id)
+                r = requests.put(url)
+
+                if id % 10 == 0:
+                    print '{} of {}'.format(id, len(project_ids))
+
+                if r.status_code != 204:
+                    failed_projects.append(id)
+                    print url, r.status_code
+
+            project_ids = failed_projects

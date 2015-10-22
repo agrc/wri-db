@@ -3,10 +3,13 @@
 
 '''ArcGIS Press
 Usage:
-  dbseeder seed <source> <destination>
+  dbseeder seed <source> <destination> <where>
   dbseeder (-h | --help)
 Options:
   -h --help     Show this screen.
+  <source> a file location to a .sde file. eg: "connections\\WRI on PROD.sde"
+  <destination> a file location to a .sde file. eg: "connections\\WRI on DEV.sde"
+  <where> the base location of the web api. eg: "http://localhost/wri/" or "https://wrimaps.at.utah.gov/WRI_AT/"
 '''
 
 import sys
@@ -22,7 +25,7 @@ def main():
         'destination': arguments['<destination>']
     }
 
-    seeder = Seeder(locations)
+    seeder = Seeder(locations, arguments['<where>'])
 
     if arguments['seed']:
         return seeder.process()

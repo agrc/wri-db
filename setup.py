@@ -71,6 +71,9 @@ setup(
     cmdclass={
         'test': Tox
     },
+    install_requires=[
+        'requests==2.8.1'
+    ],
     tests_require=[
         'tox',
         'nose==1.3.4',
