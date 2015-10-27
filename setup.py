@@ -40,7 +40,7 @@ class Tox(TestCommand):
 
 setup(
     name="wri-dbseeder",
-    version="3.0.0",
+    version="4.0.0",
     license="MIT",
     description="ETL WRI Data",
     long_description="",
@@ -72,7 +72,10 @@ setup(
         'test': Tox
     },
     install_requires=[
-        'requests==2.8.1'
+        'requests==2.8.1',
+        'pyopenssl==0.15.1',
+        'ndg-httpsclient==0.4.0',
+        'pyasn1==0.1.9'
     ],
     tests_require=[
         'tox',
