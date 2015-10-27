@@ -361,6 +361,9 @@ class Seeder(object):
         cursor = arcpy.ArcSDESQLExecute(locations['destination'])
         project_ids = None
 
+        if self.api_url_template.startswith('https'):
+            requests.packages.urllib3.disable_warnings()
+
         try:
             project_ids = cursor.execute('select project_id from project')
         finally:
@@ -368,19 +371,21 @@ class Seeder(object):
 
         project_ids = [item for iter_ in project_ids for item in iter_]
         project_ids.sort()
+        i = 0
 
         while project_ids:
             failed_projects = []
             for id in project_ids:
                 #: make request to server
                 url = self.api_url_template.format(id)
-                r = requests.put(url)
-
-                if id % 10 == 0:
-                    print '{} of {}'.format(id, len(project_ids))
+                r = requests.put(url, verify=False)
+                i += 1
+                if i % 10 == 0:
+                    print '{} of {}'.format(i, len(project_ids))
 
                 if r.status_code != 204:
                     failed_projects.append(id)
                     print url, r.status_code
 
             project_ids = failed_projects
+            i = 0
