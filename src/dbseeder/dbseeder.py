@@ -12,7 +12,6 @@ import re
 import timeit
 import requests
 from functools import partial
-from models import Lookup
 from os.path import join, dirname, isfile
 
 
@@ -21,33 +20,31 @@ class Seeder(object):
     def __init__(self, locations, where):
         super(Seeder, self).__init__()
 
-        self.Lookup = Lookup()
-
         self.api_url_template = where + 'api/historical/project/{}/create-related-data'
 
         self.table_models = [
-            models.Points(),
-            models.Points(final=True),
+            # models.Points(),
+            # models.Points(final=True),
             models.Guzzler(),
             models.Guzzler(final=True),
-            models.Fence(),
-            models.Fence(final=True),
-            models.Pipeline(),
-            models.Pipeline(final=True),
-            models.Dam(),
-            models.Dam(final=True),
-            models.AffectedArea(),
-            models.AffectedArea(final=True),
-            models.Research(),
-            models.Research(final=True),
-            models.FishPassage(),
-            models.FishPassage(final=True),
-            models.EasementAquisition(),
-            models.EasementAquisition(final=True),
-            models.AquaticTreatmentArea(),
-            models.AquaticTreatmentArea(final=True),
-            models.TerrestrialTreatmentArea(),
-            models.TerrestrialTreatmentArea(final=True),
+            # models.Fence(),
+            # models.Fence(final=True),
+            # models.Pipeline(),
+            # models.Pipeline(final=True),
+            # models.Dam(),
+            # models.Dam(final=True),
+            # models.AffectedArea(),
+            # models.AffectedArea(final=True),
+            # models.Research(),
+            # models.Research(final=True),
+            # models.FishPassage(),
+            # models.FishPassage(final=True),
+            # models.EasementAquisition(),
+            # models.EasementAquisition(final=True),
+            # models.AquaticTreatmentArea(),
+            # models.AquaticTreatmentArea(final=True),
+            # models.TerrestrialTreatmentArea(),
+            # models.TerrestrialTreatmentArea(final=True),
         ]
 
         self.scratch_line = '%scratchGDB%\\wri_dbseeder_line'
@@ -146,15 +143,15 @@ class Seeder(object):
 
         self.set_geometry_types(arcpy, self.locations['destination'], create=False)
 
-        print('Updating Pending Complete Status')
-        self.update_status(arcpy, self.locations)
-
-        print('Removing Duplicate Features')
-        self.dedup_features(arcpy, self.locations)
-
-        print('Updating Related Tables and Project Centroids')
-        self.update_related_and_centroids(arcpy, self.locations)
-
+        # print('Updating Pending Complete Status')
+        # self.update_status(arcpy, self.locations)
+        #
+        # print('Removing Duplicate Features')
+        # self.dedup_features(arcpy, self.locations)
+        #
+        # print('Updating Related Tables and Project Centroids')
+        # self.update_related_and_centroids(arcpy, self.locations)
+        #
         total_end = timeit.default_timer()
 
         print('finished in {}'.format(round(total_end - total_start, 2)))
@@ -163,7 +160,7 @@ class Seeder(object):
         where_clause = self._get_where_clause(arcpy, locations['source'])
 
         codes = None
-        for pair in Lookup.new_status.iteritems():
+        for pair in models.Lookup.new_status.iteritems():
             if pair[1] == 'Pending Completed':
                 codes = pair
 
@@ -236,7 +233,6 @@ class Seeder(object):
 
     def _etl_row(self, model, row):
         #: (<PointGeometry, guid, guid, 3.0, u'windmill', 5)
-
         source_data = model.merge_data(row)
 
         def etl_row(item):
@@ -248,7 +244,6 @@ class Seeder(object):
             field_info = model.schema[source_field]
 
             item = (destination_field, value)
-
             if 'action' in field_info:
                 if field_info['action'] == 'strip' and value:
                     value = value.strip()
@@ -256,6 +251,10 @@ class Seeder(object):
                 elif field_info['action'] == 'stripcurly' and value:
                     value = re.sub('[{}]', '', value)
                     item = (destination_field, value)
+                elif field_info['action'] == 'guzzler_type_code' and value:
+                    item = (destination_field, self.guzzler_type_code(value))
+                elif field_info['action'] == 'structure_action_code' and value:
+                    item = (destination_field, self.structure_action_code(value))
                 else:
                     value = None
                     item = (destination_field, value)
@@ -333,6 +332,14 @@ class Seeder(object):
 
         return line
 
+    def guzzler_type_code(self, code):
+        value = models.Lookup.guzzler_type[code]
+        return models.Lookup.new_subtype[value]
+
+    def structure_action_code(self, code):
+        value = models.Lookup.structure_action[code]
+        return models.Lookup.new_action[value]
+
     def point_to_multipoint(self, point):
         import arcpy
 
@@ -347,7 +354,6 @@ class Seeder(object):
         elif operation == 'point_to_multipoint':
             if isinstance(value, tuple):
                 value = value[1]
-
             try:
                 value = value.getPart(0)
             except:

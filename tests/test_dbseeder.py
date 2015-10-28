@@ -22,7 +22,7 @@ class TestDbSeeder(unittest.TestCase):
             'destination': 'connections\WRI on (local).sde'
         }
 
-        self.patient = Seeder(self.locations)
+        self.patient = Seeder(self.locations, 'url template')
 
         model.Lookup.project_id = {
             'Project_FK': 1,
@@ -75,6 +75,8 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_points_etl(self):
         patient = model.Points()
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
+
         source_type = 1
         type = self.get_type_pair_for('Trough', model.Lookup.other_points)
         type_code = self.get_type_pair_for(type[0], model.Lookup.other_points_code, 0)
@@ -82,7 +84,7 @@ class TestDbSeeder(unittest.TestCase):
         current_project_status = self.get_type_pair_for('Current', model.Lookup.new_status)
 
         row = ('shape', 'guid', 'Project_FK', source_type, source_type, '   description   ', original_project_status, original_project_status, 'Project_FK')
-        expected = [('SHAPE@', 'shape'),
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
@@ -98,12 +100,14 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_points_etl(self):
         patient = model.Points(final=True)
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
+
         source_type = 2
         type = self.get_type_pair_for('Water control structure', model.Lookup.other_points)
         type_code = self.get_type_pair_for(type[0], model.Lookup.other_points_code, 0)
         current_project_status = self.get_type_pair_for('Completed', model.Lookup.new_status)
         row = ('shape', 'guid', 'CompletedProject_FK', source_type, source_type, '   description   ', 'CompletedProject_FK')
-        expected = [('SHAPE@', 'shape'),
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
@@ -119,18 +123,22 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_guzzler_etl(self):
         patient = model.Guzzler()
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
         type = self.get_feature_type_pair('Guzzler')
         action = 5
+        subtype = 1
         original_project_status = 2
         new_project_status = 3
-        row = ('shape', 'guid', 'Project_FK', 1, action, original_project_status, original_project_status, 'Project_FK')
-        expected = [('SHAPE@', 'shape'),
+        row = ('shape', 'guid', 'Project_FK', subtype, subtype, action, action, original_project_status, original_project_status, 'Project_FK')
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', 'Big Game'),
+                    ('FeatureSubTypeDescription', 'Big game'),
+                    ('FeatureSubTypeID', 14),
                     ('ActionDescription', 'Removal'),
+                    ('ActionID', 27),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
@@ -141,16 +149,20 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_guzzler_etl(self):
         patient = model.Guzzler(final=True)
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
         type = self.get_feature_type_pair('Guzzler')
-        action = 5
-        row = ('shape', 'guid', 'CompletedProject_FK', 1, action, 'CompletedProject_FK')
-        expected = [('SHAPE@', 'shape'),
+        action = 3
+        subtype = 2
+        row = ('shape', 'guid', 'CompletedProject_FK', subtype, subtype, action, action, 'CompletedProject_FK')
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', 'Big Game'),
-                    ('ActionDescription', 'Removal'),
+                    ('FeatureSubTypeDescription', 'Other'),
+                    ('FeatureSubTypeID', 17),
+                    ('ActionDescription', 'Construction'),
+                    ('ActionID', 8),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 5),
                     ('Project_Id', 2)]
@@ -562,6 +574,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_fishpassage_etl(self):
         patient = model.FishPassage()
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
         type = self.get_feature_type_pair('Fish passage structure')
         original_project_status = 2
         new_project_status = 3
@@ -579,7 +592,7 @@ class TestDbSeeder(unittest.TestCase):
                original_project_status,
                'Project_FK')
 
-        expected = [('SHAPE@', 'centroid'),
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
@@ -594,6 +607,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_fishpassage_etl(self):
         patient = model.FishPassage(final=True)
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
         type = self.get_feature_type_pair('Fish passage structure')
 
         class TestDummy(object):
@@ -607,7 +621,7 @@ class TestDbSeeder(unittest.TestCase):
                'CompletedProject_FK',
                'CompletedProject_FK')
 
-        expected = [('SHAPE@', 'centroid'),
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
