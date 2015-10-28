@@ -372,7 +372,7 @@ class Seeder(object):
         project_ids = [item for iter_ in project_ids for item in iter_]
         project_ids.sort()
         i = 0
-
+        progress = 10
         while project_ids:
             failed_projects = []
             for id in project_ids:
@@ -380,12 +380,14 @@ class Seeder(object):
                 url = self.api_url_template.format(id)
                 r = requests.put(url, verify=False)
                 i += 1
-                if i % 10 == 0:
+                if i % progress == 0:
                     print '{} of {}'.format(i, len(project_ids))
 
                 if r.status_code != 204:
                     failed_projects.append(id)
                     print url, r.status_code
 
+            print('acting on {} failed ids'.format(len(failed_projects)))
             project_ids = failed_projects
+            progress = 1
             i = 0
