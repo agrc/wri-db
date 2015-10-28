@@ -269,29 +269,41 @@ class Guzzler(Table):
                 'lookup': 'guzzler_type',
                 'order': 5
             },
+            '!GuzzlerType': {
+                'type': 'int',
+                'map': 'FeatureSubTypeID',
+                'action': 'guzzler_type_code',
+                'order': 6
+            },
             'GuzzlerAction': {
                 'type': 'string',
                 'map': 'ActionDescription',
                 'lookup': 'structure_action',
-                'order': 6
+                'order': 7
+            },
+            '!GuzzlerAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 8
             },
             'Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 7
+                'order': 9
             },
             '!Status': {
                 'type': 'string',
                 'map': 'StatusCode',
                 'lookup': 'status_code',
-                'order': 8
+                'order': 10
             },
             '!Project_Fk': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 9
+                'order': 11
             }
         }
 
@@ -332,29 +344,41 @@ class Guzzler(Table):
                 'lookup': 'guzzler_type',
                 'order': 5
             },
+            '!GuzzlerType': {
+                'type': 'int',
+                'map': 'FeatureSubTypeID',
+                'action': 'guzzler_type_code',
+                'order': 6
+            },
             'GuzzlerAction': {
                 'type': 'string',
                 'map': 'ActionDescription',
                 'lookup': 'structure_action',
-                'order': 6
+                'order': 7
+            },
+            '!GuzzlerAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 8
             },
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'value': 'Completed',
-                'order': 7
+                'order': 9
             },
             '*StatusCode': {
                 'type': 'string',
                 'map': 'StatusCode',
                 'value': 5,
-                'order': 8
+                'order': 10
             },
             '!CompletedProject_FK': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 9
+                'order': 11
             }
         }
 
@@ -407,29 +431,41 @@ class Fence(Table):
                 'lookup': 'fence_type',
                 'order': 5
             },
+            '!FenceType': {
+                'type': 'int',
+                'map': 'FeatureSubTypeID',
+                'action': 'fence_type_code',
+                'order': 6
+            },
             'FenceAction': {
                 'type': 'string',
                 'map': 'ActionDescription',
                 'lookup': 'structure_action',
-                'order': 6
+                'order': 7
+            },
+            '!FenceAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 8
             },
             'Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 7
+                'order': 9
             },
             '!status': {
                 'type': 'int',
                 'map': 'StatusCode',
                 'lookup': 'status_code',
-                'order': 8
+                'order': 10
             },
             '!Project_Fk': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 9
+                'order': 11
             }
         }
 
@@ -467,29 +503,41 @@ class Fence(Table):
                 'lookup': 'fence_type',
                 'order': 5
             },
+            '!FenceType': {
+                'type': 'int',
+                'map': 'FeatureSubTypeID',
+                'action': 'fence_type_code',
+                'order': 6
+            },
             'FenceAction': {
                 'type': 'string',
                 'map': 'ActionDescription',
                 'lookup': 'structure_action',
-                'order': 6
+                'order': 7
+            },
+            '!FenceAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 8
             },
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'value': 'Completed',
-                'order': 7
+                'order': 9
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
                 'value': 5,
-                'order': 8
+                'order': 10
             },
             '!CompletedProject_FK': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 9
+                'order': 11
             }
         }
 
@@ -542,29 +590,41 @@ class Pipeline(Table):
                 'lookup': 'pipeline_type',
                 'order': 5
             },
+            '!PipelineType': {
+                'type': 'int',
+                'map': 'FeatureSubTypeID',
+                'action': 'pipeline_type_code',
+                'order': 6
+            },
             'PipelineAction': {
                 'type': 'string',
                 'map': 'ActionDescription',
                 'lookup': 'structure_action',
-                'order': 6
+                'order': 7
+            },
+            '!PipelineAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 8
             },
             'Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 7
+                'order': 9
             },
             '!Status': {
                 'type': 'int',
                 'map': 'StatusCode',
                 'lookup': 'status_code',
-                'order': 8
+                'order': 10
             },
             '!Project_FK': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 9
+                'order': 11
             }
         }
 
@@ -602,29 +662,41 @@ class Pipeline(Table):
                 'lookup': 'pipeline_type',
                 'order': 5
             },
+            '!PipelineType': {
+                'type': 'int',
+                'map': 'FeatureSubTypeID',
+                'action': 'pipeline_type_code',
+                'order': 6
+            },
             'PipelineAction': {
                 'type': 'string',
                 'map': 'ActionDescription',
                 'lookup': 'structure_action',
-                'order': 6
+                'order': 7
+            },
+            '!PipelineAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 8
             },
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'value': 'Completed',
-                'order': 7
+                'order': 9
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
                 'value': 5,
-                'order': 8
+                'order': 10
             },
             '!CompletedProject_FK': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 9
+                'order': 11
             }
         }
 
@@ -680,23 +752,29 @@ class Dam(Table):
                 'lookup': 'structure_action',
                 'order': 5
             },
+            '!DamAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 6
+            },
             'Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 6
+                'order': 7
             },
             '!Status': {
                 'type': 'int',
                 'map': 'StatusCode',
                 'lookup': 'status_code',
-                'order': 7
+                'order': 8
             },
             '!Project_FK': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 8
+                'order': 9
             }
         }
 
@@ -737,23 +815,29 @@ class Dam(Table):
                 'lookup': 'structure_action',
                 'order': 5
             },
+            '!DamAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 6
+            },
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'value': 'Completed',
-                'order': 6
+                'order': 7
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
                 'value': 5,
-                'order': 7
+                'order': 8
             },
             '!CompletedProject_FK': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 8
+                'order': 9
             }
         }
 
@@ -1476,8 +1560,7 @@ class Lookup(object):
         9: 'Fish passage structure',
         10: 'Fence',
         11: 'Pipeline',
-        12: 'Dam',
-        13: 'Research',
+        12: 'Dam'
     }
 
     treatment_area = {
@@ -1539,7 +1622,7 @@ class Lookup(object):
     }
 
     guzzler_type = {
-        1: 'Big Game',
+        1: 'Big game',
         2: 'Other'
     }
 
@@ -1555,4 +1638,72 @@ class Lookup(object):
     pipeline_type = {
         1: 'Above surface',
         2: 'Below surface'
+    }
+
+    new_subtype = {
+        'Barbed wire': 1,
+        'Buck pole': 2,
+        'Let down': 3,
+        'Net wire': 4,
+        'Pole top': 5,
+        'Water gap (stream corridor)': 6,
+        'Livestock crossing (stream corridor)': 7,
+        'Above surface': 8,
+        'Below surface': 9,
+        'High hazard': 10,
+        'Moderate hazard': 11,
+        'Low hazard': 12,
+        'No hazard': 13,
+        'Big game': 14,
+        'Upland game': 15,
+        'Big game/Upland game': 16,
+        'Other': 17,
+        'Barrier (electric)': 18,
+        'Barrier (physical)': 19,
+        'Rotary drum screen': 20,
+        'Flat plate screen': 21,
+        'Fish ladder': 22,
+        'Culvert': 23
+    }
+
+    new_action = {
+        'Aerator': 1,
+        'Anchor chain': 2,
+        'Biological control (of vegetation)': 3,
+        'Bulldozing': 4,
+        'Bullhog': 5,
+        'Cable': 6,
+        'Chain harrow': 7,
+        'Construction': 8,
+        'Disc': 9,
+        'Easement/Acquisition': 10,
+        'Excavating/Extraction': 11,
+        'Forestry practices': 12,
+        'Grazing management/changes': 13,
+        'Greenstripping': 14,
+        'Harrow': 15,
+        'Herbicide application': 16,
+        'Interseeding': 17,
+        'Lake/Wetland/Pond Improvements': 18,
+        'Land imprinter': 19,
+        'Maintenance': 20,
+        'Modification': 21,
+        'Mowing': 22,
+        'Piscicide Application': 23,
+        'Planting/Transplanting': 24,
+        'Prescribed fire': 25,
+        'Reconstruction': 26,
+        'Removal': 27,
+        'Road decommissioning': 28,
+        'Road/Parking Area Improvements': 29,
+        'Roller chopper': 30,
+        'Roller Packer': 31,
+        'Seeding (primary)': 32,
+        'Seeding (secondary/shrub)': 33,
+        'Skid-steer mounted tree cutter': 34,
+        'Spring Development': 35,
+        'Vegetation removal / hand crew': 36,
+        'Stream Corridor/Channel Improvements': 37,
+        'Vegetation Improvements': 38,
+        'Research': 0
     }

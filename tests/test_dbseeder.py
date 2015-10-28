@@ -22,7 +22,7 @@ class TestDbSeeder(unittest.TestCase):
             'destination': 'connections\WRI on (local).sde'
         }
 
-        self.patient = Seeder(self.locations)
+        self.patient = Seeder(self.locations, 'url template')
 
         model.Lookup.project_id = {
             'Project_FK': 1,
@@ -75,6 +75,8 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_points_etl(self):
         patient = model.Points()
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
+
         source_type = 1
         type = self.get_type_pair_for('Trough', model.Lookup.other_points)
         type_code = self.get_type_pair_for(type[0], model.Lookup.other_points_code, 0)
@@ -82,7 +84,7 @@ class TestDbSeeder(unittest.TestCase):
         current_project_status = self.get_type_pair_for('Current', model.Lookup.new_status)
 
         row = ('shape', 'guid', 'Project_FK', source_type, source_type, '   description   ', original_project_status, original_project_status, 'Project_FK')
-        expected = [('SHAPE@', 'shape'),
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
@@ -98,12 +100,14 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_points_etl(self):
         patient = model.Points(final=True)
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
+
         source_type = 2
         type = self.get_type_pair_for('Water control structure', model.Lookup.other_points)
         type_code = self.get_type_pair_for(type[0], model.Lookup.other_points_code, 0)
         current_project_status = self.get_type_pair_for('Completed', model.Lookup.new_status)
         row = ('shape', 'guid', 'CompletedProject_FK', source_type, source_type, '   description   ', 'CompletedProject_FK')
-        expected = [('SHAPE@', 'shape'),
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
@@ -119,18 +123,22 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_guzzler_etl(self):
         patient = model.Guzzler()
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
         type = self.get_feature_type_pair('Guzzler')
         action = 5
+        subtype = 1
         original_project_status = 2
         new_project_status = 3
-        row = ('shape', 'guid', 'Project_FK', 1, action, original_project_status, original_project_status, 'Project_FK')
-        expected = [('SHAPE@', 'shape'),
+        row = ('shape', 'guid', 'Project_FK', subtype, subtype, action, action, original_project_status, original_project_status, 'Project_FK')
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', 'Big Game'),
+                    ('FeatureSubTypeDescription', 'Big game'),
+                    ('FeatureSubTypeID', 14),
                     ('ActionDescription', 'Removal'),
+                    ('ActionID', 27),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
@@ -141,16 +149,20 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_guzzler_etl(self):
         patient = model.Guzzler(final=True)
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
         type = self.get_feature_type_pair('Guzzler')
-        action = 5
-        row = ('shape', 'guid', 'CompletedProject_FK', 1, action, 'CompletedProject_FK')
-        expected = [('SHAPE@', 'shape'),
+        action = 3
+        subtype = 2
+        row = ('shape', 'guid', 'CompletedProject_FK', subtype, subtype, action, action, 'CompletedProject_FK')
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', 'Big Game'),
-                    ('ActionDescription', 'Removal'),
+                    ('FeatureSubTypeDescription', 'Other'),
+                    ('FeatureSubTypeID', 17),
+                    ('ActionDescription', 'Construction'),
+                    ('ActionID', 8),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 5),
                     ('Project_Id', 2)]
@@ -162,14 +174,16 @@ class TestDbSeeder(unittest.TestCase):
     def test_fence_etl(self):
         patient = model.Fence()
         type = self.get_feature_type_pair('Fence')
-        sub_type = 'Pole top'
-        action = 'Reconstruction'
+        sub_type = 5  #: 'Pole top'
+        action = 4  #: 'Reconstruction'
         original_project_status = 2
         new_project_status = 3
         row = ('shape',
                'guid',
                'Project_FK',
                sub_type,
+               sub_type,
+               action,
                action,
                original_project_status,
                original_project_status,
@@ -180,8 +194,10 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', sub_type),
-                    ('ActionDescription', action),
+                    ('FeatureSubTypeDescription', 'Pole top'),
+                    ('FeatureSubTypeID', 5),
+                    ('ActionDescription', 'Reconstruction'),
+                    ('ActionID', 26),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
@@ -197,6 +213,8 @@ class TestDbSeeder(unittest.TestCase):
                '1E383419-8A37-4454-98EA-2E23E2DD6D30',  #: guid
                'Project_FK',  #: pfk
                2,  #: fence type
+               2,  #: fence type
+               3,  #: fence action
                3,  #: fence action
                2,  #: status
                2,  #: status
@@ -208,7 +226,9 @@ class TestDbSeeder(unittest.TestCase):
                     ('TypeDescription', 'Fence'),
                     ('TypeCode', 10),
                     ('FeatureSubTypeDescription', 'Buck pole'),
+                    ('FeatureSubTypeID', 2),
                     ('ActionDescription', 'Construction'),
+                    ('ActionID', 8),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', 3),
                     ('Project_Id', 1)])
@@ -220,13 +240,15 @@ class TestDbSeeder(unittest.TestCase):
     def test_final_fence_etl(self):
         patient = model.Fence(final=True)
         type = self.get_feature_type_pair('Fence')
-        sub_type = 'Pole top'
-        action = 'Reconstruction'
+        sub_type = 5  #: 'Pole top'
+        action = 4  #: 'Reconstruction'
 
         row = ('shape',
                'guid',
                'CompletedProject_FK',
                sub_type,
+               sub_type,
+               action,
                action,
                'CompletedProject_FK')
 
@@ -235,8 +257,10 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', sub_type),
-                    ('ActionDescription', action),
+                    ('FeatureSubTypeDescription', 'Pole top'),
+                    ('FeatureSubTypeID', 5),
+                    ('ActionDescription', 'Reconstruction'),
+                    ('ActionID', 26),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 5),
                     ('Project_Id', 2)]
@@ -248,8 +272,8 @@ class TestDbSeeder(unittest.TestCase):
     def test_pipeline_etl(self):
         patient = model.Pipeline()
         type = self.get_feature_type_pair('Pipeline')
-        sub_type = 'Above surface'
-        action = 'Reconstruction'
+        sub_type = 1  #: 'Above surface'
+        action = 4  #: 'Reconstruction'
         original_project_status = 2
         new_project_status = 3
 
@@ -257,6 +281,8 @@ class TestDbSeeder(unittest.TestCase):
                'guid',
                'Project_FK',
                sub_type,
+               sub_type,
+               action,
                action,
                original_project_status,
                original_project_status,
@@ -267,8 +293,10 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', sub_type),
-                    ('ActionDescription', action),
+                    ('FeatureSubTypeDescription', 'Above surface'),
+                    ('FeatureSubTypeID', 8),
+                    ('ActionDescription', 'Reconstruction'),
+                    ('ActionID', 26),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
@@ -280,13 +308,15 @@ class TestDbSeeder(unittest.TestCase):
     def test_final_pipeline_etl(self):
         patient = model.Pipeline(final=True)
         type = self.get_feature_type_pair('Pipeline')
-        sub_type = 'Above surface'
-        action = 'Reconstruction'
+        sub_type = 2  #: 'Below surface'
+        action = 5  #: 'Removal'
 
         row = ('shape',
                'guid',
                'CompletedProject_FK',
                sub_type,
+               sub_type,
+               action,
                action,
                'CompletedProject_FK')
 
@@ -295,8 +325,10 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', sub_type),
-                    ('ActionDescription', action),
+                    ('FeatureSubTypeDescription', 'Below surface'),
+                    ('FeatureSubTypeID', 9),
+                    ('ActionDescription', 'Removal'),
+                    ('ActionID', 27),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 5),
                     ('Project_Id', 2)]
@@ -308,13 +340,14 @@ class TestDbSeeder(unittest.TestCase):
     def test_dam_etl(self):
         patient = model.Dam()
         type = self.get_feature_type_pair('Dam')
-        action = 'Reconstruction'
+        action = 4  #: 'Reconstruction'
         original_project_status = 2
         current_project_status = 3
 
         row = ('shape',
                'guid',
                'Project_FK',
+               action,
                action,
                original_project_status,
                original_project_status,
@@ -325,7 +358,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('ActionDescription', action),
+                    ('ActionDescription', 'Reconstruction'),
+                    ('ActionID', 26),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', current_project_status),
                     ('Project_Id', 1)]
@@ -339,12 +373,13 @@ class TestDbSeeder(unittest.TestCase):
     def test_final_dam_etl(self):
         patient = model.Dam(final=True)
         type = self.get_feature_type_pair('Dam')
-        action = 'Reconstruction'
+        action = 1  #: 'Maintenance'
         self.patient.polygon_to_line = Mock(return_value='poly_to_line')
 
         row = ('shape',
                'guid',
                'CompletedProject_FK',
+               action,
                action,
                'CompletedProject_FK')
 
@@ -353,7 +388,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('ActionDescription', action),
+                    ('ActionDescription', 'Maintenance'),
+                    ('ActionID', 20),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 5),
                     ('Project_Id', 2)]
@@ -562,6 +598,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_fishpassage_etl(self):
         patient = model.FishPassage()
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
         type = self.get_feature_type_pair('Fish passage structure')
         original_project_status = 2
         new_project_status = 3
@@ -579,7 +616,7 @@ class TestDbSeeder(unittest.TestCase):
                original_project_status,
                'Project_FK')
 
-        expected = [('SHAPE@', 'centroid'),
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
@@ -594,6 +631,7 @@ class TestDbSeeder(unittest.TestCase):
 
     def test_final_fishpassage_etl(self):
         patient = model.FishPassage(final=True)
+        self.patient.point_to_multipoint = Mock(return_value='point_to_multipoint')
         type = self.get_feature_type_pair('Fish passage structure')
 
         class TestDummy(object):
@@ -607,7 +645,7 @@ class TestDbSeeder(unittest.TestCase):
                'CompletedProject_FK',
                'CompletedProject_FK')
 
-        expected = [('SHAPE@', 'centroid'),
+        expected = [('SHAPE@', 'point_to_multipoint'),
                     ('GUID', 'guid'),
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),

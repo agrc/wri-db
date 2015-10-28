@@ -12,7 +12,6 @@ import re
 import timeit
 import requests
 from functools import partial
-from models import Lookup
 from os.path import join, dirname, isfile
 
 
@@ -20,8 +19,6 @@ class Seeder(object):
 
     def __init__(self, locations, where):
         super(Seeder, self).__init__()
-
-        self.Lookup = Lookup()
 
         self.api_url_template = where + 'api/historical/project/{}/create-related-data'
 
@@ -163,7 +160,7 @@ class Seeder(object):
         where_clause = self._get_where_clause(arcpy, locations['source'])
 
         codes = None
-        for pair in Lookup.new_status.iteritems():
+        for pair in models.Lookup.new_status.iteritems():
             if pair[1] == 'Pending Completed':
                 codes = pair
 
@@ -236,7 +233,6 @@ class Seeder(object):
 
     def _etl_row(self, model, row):
         #: (<PointGeometry, guid, guid, 3.0, u'windmill', 5)
-
         source_data = model.merge_data(row)
 
         def etl_row(item):
@@ -248,7 +244,6 @@ class Seeder(object):
             field_info = model.schema[source_field]
 
             item = (destination_field, value)
-
             if 'action' in field_info:
                 if field_info['action'] == 'strip' and value:
                     value = value.strip()
@@ -256,6 +251,16 @@ class Seeder(object):
                 elif field_info['action'] == 'stripcurly' and value:
                     value = re.sub('[{}]', '', value)
                     item = (destination_field, value)
+                elif field_info['action'] == 'guzzler_type_code' and value:
+                    item = (destination_field, self.type_code('guzzler', value))
+                elif field_info['action'] == 'fence_type_code' and value:
+                    item = (destination_field, self.type_code('fence', value))
+                elif field_info['action'] == 'pipeline_type_code' and value:
+                    item = (destination_field, self.type_code('pipeline', value))
+                elif field_info['action'] == 'dam_type_code' and value:
+                    item = (destination_field, self.type_code('dam', value))
+                elif field_info['action'] == 'structure_action_code' and value:
+                    item = (destination_field, self.structure_action_code(value))
                 else:
                     value = None
                     item = (destination_field, value)
@@ -333,6 +338,18 @@ class Seeder(object):
 
         return line
 
+    def type_code(self, lookup, code):
+        try:
+            value = models.Lookup.__dict__[lookup + '_type'][code]
+        except KeyError:
+            value = code
+
+        return models.Lookup.new_subtype[value]
+
+    def structure_action_code(self, code):
+        value = models.Lookup.structure_action[code]
+        return models.Lookup.new_action[value]
+
     def point_to_multipoint(self, point):
         import arcpy
 
@@ -347,7 +364,6 @@ class Seeder(object):
         elif operation == 'point_to_multipoint':
             if isinstance(value, tuple):
                 value = value[1]
-
             try:
                 value = value.getPart(0)
             except:
