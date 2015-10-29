@@ -25,13 +25,13 @@ class Seeder(object):
         self.table_models = [
             # models.Points(),
             # models.Points(final=True),
-            models.Guzzler(),
-            models.Guzzler(final=True),
-            # models.Fence(),
+            # models.Guzzler(),
+            # models.Guzzler(final=True),
+            models.Fence(),
             # models.Fence(final=True),
-            # models.Pipeline(),
+            models.Pipeline(),
             # models.Pipeline(final=True),
-            # models.Dam(),
+            models.Dam(),
             # models.Dam(final=True),
             # models.AffectedArea(),
             # models.AffectedArea(final=True),
@@ -252,7 +252,13 @@ class Seeder(object):
                     value = re.sub('[{}]', '', value)
                     item = (destination_field, value)
                 elif field_info['action'] == 'guzzler_type_code' and value:
-                    item = (destination_field, self.guzzler_type_code(value))
+                    item = (destination_field, self.type_code('guzzler', value))
+                elif field_info['action'] == 'fence_type_code' and value:
+                    item = (destination_field, self.type_code('fence', value))
+                elif field_info['action'] == 'pipeline_type_code' and value:
+                    item = (destination_field, self.type_code('pipeline', value))
+                elif field_info['action'] == 'dam_type_code' and value:
+                    item = (destination_field, self.type_code('dam', value))
                 elif field_info['action'] == 'structure_action_code' and value:
                     item = (destination_field, self.structure_action_code(value))
                 else:
@@ -332,8 +338,12 @@ class Seeder(object):
 
         return line
 
-    def guzzler_type_code(self, code):
-        value = models.Lookup.guzzler_type[code]
+    def type_code(self, lookup, code):
+        try:
+            value = models.Lookup.__dict__[lookup + '_type'][code]
+        except KeyError:
+            value = code
+
         return models.Lookup.new_subtype[value]
 
     def structure_action_code(self, code):

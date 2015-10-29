@@ -174,14 +174,16 @@ class TestDbSeeder(unittest.TestCase):
     def test_fence_etl(self):
         patient = model.Fence()
         type = self.get_feature_type_pair('Fence')
-        sub_type = 'Pole top'
-        action = 'Reconstruction'
+        sub_type = 5  #: 'Pole top'
+        action = 4  #: 'Reconstruction'
         original_project_status = 2
         new_project_status = 3
         row = ('shape',
                'guid',
                'Project_FK',
                sub_type,
+               sub_type,
+               action,
                action,
                original_project_status,
                original_project_status,
@@ -192,8 +194,10 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', sub_type),
-                    ('ActionDescription', action),
+                    ('FeatureSubTypeDescription', 'Pole top'),
+                    ('FeatureSubTypeID', 5),
+                    ('ActionDescription', 'Reconstruction'),
+                    ('ActionID', 26),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
@@ -209,6 +213,8 @@ class TestDbSeeder(unittest.TestCase):
                '1E383419-8A37-4454-98EA-2E23E2DD6D30',  #: guid
                'Project_FK',  #: pfk
                2,  #: fence type
+               2,  #: fence type
+               3,  #: fence action
                3,  #: fence action
                2,  #: status
                2,  #: status
@@ -220,7 +226,9 @@ class TestDbSeeder(unittest.TestCase):
                     ('TypeDescription', 'Fence'),
                     ('TypeCode', 10),
                     ('FeatureSubTypeDescription', 'Buck pole'),
+                    ('FeatureSubTypeID', 2),
                     ('ActionDescription', 'Construction'),
+                    ('ActionID', 8),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', 3),
                     ('Project_Id', 1)])
@@ -232,13 +240,15 @@ class TestDbSeeder(unittest.TestCase):
     def test_final_fence_etl(self):
         patient = model.Fence(final=True)
         type = self.get_feature_type_pair('Fence')
-        sub_type = 'Pole top'
-        action = 'Reconstruction'
+        sub_type = 5  #: 'Pole top'
+        action = 4  #: 'Reconstruction'
 
         row = ('shape',
                'guid',
                'CompletedProject_FK',
                sub_type,
+               sub_type,
+               action,
                action,
                'CompletedProject_FK')
 
@@ -247,8 +257,10 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', sub_type),
-                    ('ActionDescription', action),
+                    ('FeatureSubTypeDescription', 'Pole top'),
+                    ('FeatureSubTypeID', 5),
+                    ('ActionDescription', 'Reconstruction'),
+                    ('ActionID', 26),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 5),
                     ('Project_Id', 2)]
