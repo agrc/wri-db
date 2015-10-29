@@ -272,8 +272,8 @@ class TestDbSeeder(unittest.TestCase):
     def test_pipeline_etl(self):
         patient = model.Pipeline()
         type = self.get_feature_type_pair('Pipeline')
-        sub_type = 'Above surface'
-        action = 'Reconstruction'
+        sub_type = 1  #: 'Above surface'
+        action = 4  #: 'Reconstruction'
         original_project_status = 2
         new_project_status = 3
 
@@ -281,6 +281,8 @@ class TestDbSeeder(unittest.TestCase):
                'guid',
                'Project_FK',
                sub_type,
+               sub_type,
+               action,
                action,
                original_project_status,
                original_project_status,
@@ -291,8 +293,10 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', sub_type),
-                    ('ActionDescription', action),
+                    ('FeatureSubTypeDescription', 'Above surface'),
+                    ('FeatureSubTypeID', 8),
+                    ('ActionDescription', 'Reconstruction'),
+                    ('ActionID', 26),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', new_project_status),
                     ('Project_Id', 1)]
@@ -304,13 +308,15 @@ class TestDbSeeder(unittest.TestCase):
     def test_final_pipeline_etl(self):
         patient = model.Pipeline(final=True)
         type = self.get_feature_type_pair('Pipeline')
-        sub_type = 'Above surface'
-        action = 'Reconstruction'
+        sub_type = 2  #: 'Below surface'
+        action = 5  #: 'Removal'
 
         row = ('shape',
                'guid',
                'CompletedProject_FK',
                sub_type,
+               sub_type,
+               action,
                action,
                'CompletedProject_FK')
 
@@ -319,8 +325,10 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('FeatureSubTypeDescription', sub_type),
-                    ('ActionDescription', action),
+                    ('FeatureSubTypeDescription', 'Below surface'),
+                    ('FeatureSubTypeID', 9),
+                    ('ActionDescription', 'Removal'),
+                    ('ActionID', 27),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 5),
                     ('Project_Id', 2)]

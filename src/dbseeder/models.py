@@ -590,29 +590,41 @@ class Pipeline(Table):
                 'lookup': 'pipeline_type',
                 'order': 5
             },
+            '!PipelineType': {
+                'type': 'int',
+                'map': 'FeatureSubTypeID',
+                'action': 'pipeline_type_code',
+                'order': 6
+            },
             'PipelineAction': {
                 'type': 'string',
                 'map': 'ActionDescription',
                 'lookup': 'structure_action',
-                'order': 6
+                'order': 7
+            },
+            '!PipelineAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 8
             },
             'Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 7
+                'order': 9
             },
             '!Status': {
                 'type': 'int',
                 'map': 'StatusCode',
                 'lookup': 'status_code',
-                'order': 8
+                'order': 10
             },
             '!Project_FK': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 9
+                'order': 11
             }
         }
 
@@ -650,29 +662,41 @@ class Pipeline(Table):
                 'lookup': 'pipeline_type',
                 'order': 5
             },
+            '!PipelineType': {
+                'type': 'int',
+                'map': 'FeatureSubTypeID',
+                'action': 'pipeline_type_code',
+                'order': 6
+            },
             'PipelineAction': {
                 'type': 'string',
                 'map': 'ActionDescription',
                 'lookup': 'structure_action',
-                'order': 6
+                'order': 7
+            },
+            '!PipelineAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 8
             },
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'value': 'Completed',
-                'order': 7
+                'order': 9
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
                 'value': 5,
-                'order': 8
+                'order': 10
             },
             '!CompletedProject_FK': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 9
+                'order': 11
             }
         }
 
