@@ -752,23 +752,29 @@ class Dam(Table):
                 'lookup': 'structure_action',
                 'order': 5
             },
+            '!DamAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 6
+            },
             'Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'lookup': 'status',
-                'order': 6
+                'order': 7
             },
             '!Status': {
                 'type': 'int',
                 'map': 'StatusCode',
                 'lookup': 'status_code',
-                'order': 7
+                'order': 8
             },
             '!Project_FK': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 8
+                'order': 9
             }
         }
 
@@ -809,23 +815,29 @@ class Dam(Table):
                 'lookup': 'structure_action',
                 'order': 5
             },
+            '!DamAction': {
+                'type': 'int',
+                'map': 'ActionID',
+                'action': 'structure_action_code',
+                'order': 6
+            },
             '*Status': {
                 'type': 'string',
                 'map': 'StatusDescription',
                 'value': 'Completed',
-                'order': 6
+                'order': 7
             },
             '*StatusCode': {
                 'type': 'int',
                 'map': 'StatusCode',
                 'value': 5,
-                'order': 7
+                'order': 8
             },
             '!CompletedProject_FK': {
                 'map': 'Project_Id',
                 'lookup': 'project_id',
                 'action': 'stripcurly',
-                'order': 8
+                'order': 9
             }
         }
 

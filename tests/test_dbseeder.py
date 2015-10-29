@@ -340,13 +340,14 @@ class TestDbSeeder(unittest.TestCase):
     def test_dam_etl(self):
         patient = model.Dam()
         type = self.get_feature_type_pair('Dam')
-        action = 'Reconstruction'
+        action = 4  #: 'Reconstruction'
         original_project_status = 2
         current_project_status = 3
 
         row = ('shape',
                'guid',
                'Project_FK',
+               action,
                action,
                original_project_status,
                original_project_status,
@@ -357,7 +358,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'Project_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('ActionDescription', action),
+                    ('ActionDescription', 'Reconstruction'),
+                    ('ActionID', 26),
                     ('StatusDescription', 'Current'),
                     ('StatusCode', current_project_status),
                     ('Project_Id', 1)]
@@ -371,12 +373,13 @@ class TestDbSeeder(unittest.TestCase):
     def test_final_dam_etl(self):
         patient = model.Dam(final=True)
         type = self.get_feature_type_pair('Dam')
-        action = 'Reconstruction'
+        action = 1  #: 'Maintenance'
         self.patient.polygon_to_line = Mock(return_value='poly_to_line')
 
         row = ('shape',
                'guid',
                'CompletedProject_FK',
+               action,
                action,
                'CompletedProject_FK')
 
@@ -385,7 +388,8 @@ class TestDbSeeder(unittest.TestCase):
                     ('Project_FK', 'CompletedProject_FK'),
                     ('TypeDescription', type[1]),
                     ('TypeCode', type[0]),
-                    ('ActionDescription', action),
+                    ('ActionDescription', 'Maintenance'),
+                    ('ActionID', 20),
                     ('StatusDescription', 'Completed'),
                     ('StatusCode', 5),
                     ('Project_Id', 2)]
