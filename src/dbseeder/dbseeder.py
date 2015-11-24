@@ -139,7 +139,7 @@ class Seeder(object):
                         raise e
 
             end = timeit.default_timer()
-            print('- {} seconds'.format(round(end-start, 2)))
+            print('- {} minutes'.format(round(end-start/60, 2)))
 
         self.set_geometry_types(arcpy, self.locations['destination'], create=False)
 
@@ -390,7 +390,10 @@ class Seeder(object):
 
         i = 0
         progress = 50
-        while project_ids:
+        retry_count = 2
+        j = 0
+        intermediate_start = timeit.default_timer()
+        while project_ids and j < retry_count:
             failed_projects = []
             for id in project_ids:
                 #: make request to server
@@ -404,7 +407,10 @@ class Seeder(object):
 
                 i += 1
                 if i % progress == 0:
-                    print '{} of {}'.format(i, len(project_ids))
+                    intermediate_end = timeit.default_timer()
+
+                    print '{} of {} in {} seconds'.format(i, len(project_ids), round(intermediate_end - intermediate_start, 2))
+                    intermediate_start = timeit.default_timer()
 
                 if r.status_code != 204:
                     failed_projects.append(id)
@@ -414,3 +420,4 @@ class Seeder(object):
             project_ids = failed_projects
             progress = 1
             i = 0
+            j += 1
