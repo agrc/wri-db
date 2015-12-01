@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''ArcGIS Press
+'''WRI Database Conversion tool
 Usage:
   dbseeder seed <source> <destination> <where>
   dbseeder (-h | --help)
