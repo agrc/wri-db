@@ -19,7 +19,7 @@ from docopt import docopt
 
 
 def main():
-    arguments = docopt(__doc__, version='4.1.1')
+    arguments = docopt(__doc__, version='4.2.0')
 
     locations = {
         'source': arguments['<source>'],
