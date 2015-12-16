@@ -17,10 +17,10 @@ from os.path import join, dirname, isfile
 
 class Seeder(object):
 
-    def __init__(self, locations, where):
+    def __init__(self, locations, url):
         super(Seeder, self).__init__()
 
-        self.api_url_template = where + 'api/historical/project/{}/create-related-data'
+        self.api_url_template = url + 'api/historical/project/{}/create-related-data'
 
         self.table_models = [
             models.Points(),
@@ -54,6 +54,7 @@ class Seeder(object):
         status_sql = join(parent_directory, '..\\..\\scripts\\sql\\projects_without_finals.sql')
         dedupe_features = join(parent_directory, '..\\..\\scripts\\sql\\delete_features_with_completes.sql')
         truncate_features = join(parent_directory, '..\\..\\scripts\\sql\\truncate_spatial_tables.sql')
+        truncate_related = join(parent_directory, '..\\..\\scripts\\sql\\truncate_related_tables.sql')
 
         with open(seed_sql, 'r') as f:
             self.seed_sql = f.read()
@@ -67,7 +68,13 @@ class Seeder(object):
         with open(truncate_features, 'r') as f:
             self.truncate_sql = f.read()
 
+        with open(truncate_related, 'r') as f:
+            self.truncate_related = f.read()
+
         def ensure_absolute_path(file):
+            if file is None:
+                return None
+
             if not isfile(file):
                 file = join(parent_directory, file)
                 if not isfile(file):
@@ -373,9 +380,17 @@ class Seeder(object):
 
         return item
 
+    def update(self):
+        import arcpy
+        return self.update_related_and_centroids(arcpy, self.locations)
+
     def update_related_and_centroids(self, arcpy, locations):
         cursor = arcpy.ArcSDESQLExecute(locations['destination'])
         project_ids = None
+
+        print('Truncating related tables')
+        cursor.execute(self.truncate_related)
+        print('updating related tables and centroids')
 
         if self.api_url_template.startswith('https'):
             requests.packages.urllib3.disable_warnings()
@@ -392,6 +407,7 @@ class Seeder(object):
         progress = 50
         retry_count = 2
         j = 0
+
         intermediate_start = timeit.default_timer()
         while project_ids and j < retry_count:
             failed_projects = []
