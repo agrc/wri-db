@@ -72,7 +72,7 @@ setup(
         'test': Tox
     },
     install_requires=[
-        'requests==2.8.1',
+        'requests==2.20.0',
         'pyopenssl==0.15.1',
         'ndg-httpsclient==0.4.0',
         'pyasn1==0.1.9'
