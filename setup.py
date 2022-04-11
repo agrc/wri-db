@@ -73,7 +73,7 @@ setup(
     },
     install_requires=[
         'requests==2.8.1',
-        'pyopenssl==0.15.1',
+        'pyopenssl==17.5.0',
         'ndg-httpsclient==0.4.0',
         'pyasn1==0.1.9'
     ],
